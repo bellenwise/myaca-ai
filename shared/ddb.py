@@ -1,6 +1,7 @@
 import boto3
 import logging
 from typing import Dict, List, Optional, Any, Union
+from boto3.dynamodb.conditions import Key
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -14,6 +15,7 @@ class DDBClient:
 
     def __init__(self, region_name='eu-west-01'):
         # DynamoDB 리소스 및 클라이언트 초기화
+        self.dynamodb = boto3.resource('dynamodb', region_name=region_name)
         self.dynamodb_client = boto3.client('dynamodb', region_name=region_name)
 
         logger.info("DynamoDB Client initialized")
@@ -121,4 +123,96 @@ class DDBClient:
 
         except Exception as e:
             logger.error(f"Transaction write failed: {e}")
+            return False, e
+
+    def batch_delete(self, table_name: str, session_id: str) -> (bool, Exception):
+        """
+        세션의 모든 채팅 기록을 배치로 삭제
+        25개 이상일 경우 transactional batches로 처리f
+
+        Args:
+            table_name (str): 테이블 이름
+            session_id (str): 세션 ID
+
+        Returns:
+            bool: 삭제 성공 여부
+        """
+        try:
+            # 세션의 모든 아이템 조회
+            items = self.query(
+                table_name=table_name,
+                key_condition_expression=Key("PK").eq(session_id)
+            )
+            
+            chat_items = items.get("Items", [])
+            
+            if not chat_items:
+                logger.info(f"No items found for session: {session_id}")
+                return True, None
+            
+            # 25개씩 배치로 나누어 처리
+            batch_size = 25
+            batches = [chat_items[i:i + batch_size] for i in range(0, len(chat_items), batch_size)]
+            
+            for batch in batches:
+                transact_items = []
+                for item in batch:
+                    transact_items.append({
+                        "Delete": {
+                            "TableName": table_name,
+                            "Key": {
+                                "PK": {"S": item["PK"]},
+                                "SK": {"S": item["SK"]}
+                            }
+                        }
+                    })
+                
+                # 트랜잭션으로 배치 삭제
+                success, error = self.transact_write_items(transact_items)
+                if not success:
+                    logger.error(f"Batch delete failed for session {session_id}: {error}")
+                    return False, error
+                
+                logger.info(f"Batch deleted {len(batch)} items for session {session_id}")
+            
+            logger.info(f"Successfully deleted all {len(chat_items)} items for session {session_id}")
+            return True, None
+
+        except Exception as e:
+            logger.error(f"Batch delete by session failed: {e}")
+            return False, e
+
+    def delete_message(self, table_name: str, session_id: str, message_id: str) -> (bool, Exception):
+        """
+        특정 메시지를 삭제
+
+        Args:
+            table_name (str): 테이블 이름
+            session_id (str): 세션 ID
+            message_id (str): 메시지 ID
+
+        Returns:
+            bool: 삭제 성공 여부
+        """
+        try:
+            transact_items = [{
+                "Delete": {
+                    "TableName": table_name,
+                    "Key": {
+                        "PK": {"S": session_id},
+                        "SK": {"S": message_id}
+                    }
+                }
+            }]
+            
+            success, error = self.transact_write_items(transact_items)
+            if not success:
+                logger.error(f"Delete message failed for session {session_id}, message {message_id}: {error}")
+                return False, error
+            
+            logger.info(f"Successfully deleted message {message_id} from session {session_id}")
+            return True, None
+
+        except Exception as e:
+            logger.error(f"Delete message failed: {e}")
             return False, e
