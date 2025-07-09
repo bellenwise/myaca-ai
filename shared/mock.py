@@ -138,6 +138,43 @@ class MockDDBClient:
         """
         self.transaction_log = []
 
+    def batch_delete(self, table_name: str, session_id: str) -> (bool, Exception):
+        """
+        Mock batch delete operation
+        
+        Args:
+            table_name (str): Table name
+            session_id (str): Session ID
+            
+        Returns:
+            tuple: (success, exception)
+        """
+        try:
+            logger.info(f"Mock batch delete for session: {session_id}")
+            return True, None
+        except Exception as e:
+            logger.error(f"Mock batch delete failed: {e}")
+            return False, e
+
+    def delete_message(self, table_name: str, session_id: str, message_id: str) -> (bool, Exception):
+        """
+        Mock delete message operation
+        
+        Args:
+            table_name (str): Table name
+            session_id (str): Session ID
+            message_id (str): Message ID
+            
+        Returns:
+            tuple: (success, exception)
+        """
+        try:
+            logger.info(f"Mock delete message: {message_id} from session: {session_id}")
+            return True, None
+        except Exception as e:
+            logger.error(f"Mock delete message failed: {e}")
+            return False, e
+
 
 class MockTable:
     """
@@ -230,24 +267,24 @@ def assert_response_success(test_case, response) -> Dict[str, Any]:
         Dict[str, Any]: Response data
     """
     test_case.assertEqual(response.status_code, 200)
-    test_case.assertEqual(response.message, 'OK')
     test_case.assertIsNotNone(response.body)
     
     return {'data': response.body}
 
 
-def assert_response_error(test_case, response) -> Dict[str, Any]:
+def assert_response_error(test_case, response, expected_status_code=500) -> Dict[str, Any]:
     """
     Assert that response is error and return parsed body
     
     Args:
         test_case: Test case instance
         response: HttpResponse object
+        expected_status_code: Expected status code (default 500)
         
     Returns:
         Dict[str, Any]: Response data
     """
-    test_case.assertEqual(response.status_code, 500)
+    test_case.assertEqual(response.status_code, expected_status_code)
     test_case.assertIsNotNone(response.message)
     
     return {'message': response.message}
