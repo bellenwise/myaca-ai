@@ -54,9 +54,43 @@ def lambda_handler(event, context):
         elif http_method == "DELETE":
             # Delete
             if http_path.startswith("/session"):
-                return success_response("DELETED")
+                # Get session_id from path parameters
+                session_id = path_params.get("session_id") if path_params else None
+                if not session_id:
+                    return not_found_response("session_id is required")
+                
+                # DDB batch delete with transactional processing
+                success, error = ddbClient.batch_delete(
+                    table_name=os.environ.get("CHAT"),
+                    session_id=session_id
+                )
+                
+                if not success:
+                    return server_error_response(f"Failed to delete session: {error}")
+                
+                return success_response(f"DELETED session: {session_id}")
+
             elif http_path.startswith("/message"):
-                return success_response("DELETED")
+                # Parse body for message deletion
+                body_json = json.loads(body) if body else {}
+                session_id = body_json.get("session_id")
+                message_id = body_json.get("message_id")
+                table_name = body_json.get("table_name")
+                
+                if not session_id or not message_id:
+                    return not_found_response("session_id and message_id are required")
+                
+                # Delete specific message
+                success, error = ddbClient.delete_message(
+                    table_name=table_name,
+                    session_id=session_id,
+                    message_id=message_id
+                )
+                
+                if not success:
+                    return server_error_response(f"Failed to delete message: {error}")
+                
+                return success_response(f"DELETED message: {message_id}")
 
         else:
             # POST or PUT
