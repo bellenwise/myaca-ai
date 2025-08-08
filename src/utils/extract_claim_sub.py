@@ -5,7 +5,7 @@ import binascii
 from typing import Optional, Tuple
 import src.ctypes.cognito as Cognito
 
-def ExtractClaimSub(header: str) -> Tuple[str, bool, Optional[Exception]]:
+def extract_claim_sub(header: str) -> Tuple[str, bool, Optional[Exception]]:
     """
     Extracts the 'sub' claim from a JWT token in an Authorization header.
 
