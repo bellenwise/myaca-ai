@@ -1,4 +1,3 @@
-from typing import Union
 from fastapi import FastAPI
 from src.service import chat_service
 from src.model.chat_model import *

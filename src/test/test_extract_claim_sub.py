@@ -2,7 +2,7 @@ import base64
 import json
 import binascii
 
-from src.utils.ExtractClaimSub import ExtractClaimSub  # Your module's name should be correct
+from src.utils.extract_claim_sub import ExtractClaimSub  # Your module's name should be correct
 import logging
 
 
