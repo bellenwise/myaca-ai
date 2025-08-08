@@ -3,7 +3,8 @@ import json
 import logging
 import binascii
 from typing import Optional, Tuple
-import ctypes.Cognito as Cognito
+import src.ctypes.Cognito as Cognito
+
 
 def ExtractClaimSub(header: str) -> Tuple[str, bool, Optional[Exception]]:
     """
