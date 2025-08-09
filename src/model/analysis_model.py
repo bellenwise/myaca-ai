@@ -1,8 +1,7 @@
 from pydantic import BaseModel
 
 
-class ChatRequest(BaseModel):
+class AnalysisRequest(BaseModel):
     acaId: str
     assignmentUuid: str
     problemId: str
-    question: str

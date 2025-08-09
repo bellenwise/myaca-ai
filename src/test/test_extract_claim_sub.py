@@ -2,7 +2,7 @@ import base64
 import json
 import binascii
 
-from src.utils.ExtractClaimSub import ExtractClaimSub  # Your module's name should be correct
+from src.utils.extract_claim_sub import extract_claim_sub  # Your module's name should be correct
 import logging
 
 
@@ -57,7 +57,7 @@ def test_valid_token_success(caplog):
     expected_error_type = None
 
     # When
-    actual_sub, success, error = ExtractClaimSub(header)
+    actual_sub, success, error = extract_claim_sub(header)
 
     # Then
     assert_and_log(caplog, actual_sub, expected_sub, success, expected_success, error, expected_error_type)
@@ -75,7 +75,7 @@ def test_missing_sub_claim_failure(caplog):
     expected_error_type = ValueError
 
     # When
-    actual_sub, success, error = ExtractClaimSub(header)
+    actual_sub, success, error = extract_claim_sub(header)
 
     # Then
     assert_and_log(caplog, actual_sub, expected_sub, success, expected_success, error, expected_error_type)
@@ -93,7 +93,7 @@ def test_empty_header_failure(caplog):
     expected_error_type = ValueError
 
     # When
-    actual_sub, success, error = ExtractClaimSub(header)
+    actual_sub, success, error = extract_claim_sub(header)
 
     # Then
     assert_and_log(caplog, actual_sub, expected_sub, success, expected_success, error, expected_error_type)
@@ -111,7 +111,7 @@ def test_invalid_header_format_failure(caplog):
     expected_error_type = ValueError
 
     # When
-    actual_sub, success, error = ExtractClaimSub(header)
+    actual_sub, success, error = extract_claim_sub(header)
 
     # Then
     assert_and_log(caplog, actual_sub, expected_sub, success, expected_success, error, expected_error_type)
@@ -129,7 +129,7 @@ def test_invalid_jwt_format_failure(caplog):
     expected_error_type = ValueError
 
     # When
-    actual_sub, success, error = ExtractClaimSub(header)
+    actual_sub, success, error = extract_claim_sub(header)
 
     # Then
     assert_and_log(caplog, actual_sub, expected_sub, success, expected_success, error, expected_error_type)
@@ -147,7 +147,7 @@ def test_invalid_base64_payload_failure(caplog):
     expected_error_type = binascii.Error
 
     # When
-    actual_sub, success, error = ExtractClaimSub(header)
+    actual_sub, success, error = extract_claim_sub(header)
 
     # Then
     assert_and_log(caplog, actual_sub, expected_sub, success, expected_success, error, expected_error_type)
@@ -166,7 +166,7 @@ def test_non_json_payload_failure(caplog):
     expected_error_type = json.JSONDecodeError
 
     # When
-    actual_sub, success, error = ExtractClaimSub(header)
+    actual_sub, success, error = extract_claim_sub(header)
 
     # Then
     assert_and_log(caplog, actual_sub, expected_sub, success, expected_success, error, expected_error_type)
