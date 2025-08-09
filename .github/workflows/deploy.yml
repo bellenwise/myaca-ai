@@ -44,15 +44,15 @@ jobs:
           key: ${{ secrets.AWS_EC2_SSH_KEY }}
           script: |
             # Pull the latest image from Docker Hub
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/myaca-ai:latest
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/myaca-ai:latest
 
             # Stop and remove the existing container if it is running
-            docker stop myaca-ai-container || true
-            docker rm myaca-ai-container || true
+            sudo docker stop myaca-ai-container || true
+            sudo docker rm myaca-ai-container || true
 
             # Create a .env file from the GitHub secret to pass to the container
             echo "${{ secrets.ENV_FILE }}" > .env
 
             # Run a new container with the updated image and environment variables
             # This maps port 80 on the EC2 instance to port 8000 inside the container
-            docker run -d --name myaca-ai-container --env-file .env -p 8000:8000 ${{ secrets.DOCKERHUB_USERNAME }}/myaca-ai:latest
+            sudo docker run -d --name myaca-ai-container --env-file .env -p 8000:8000 ${{ secrets.DOCKERHUB_USERNAME }}/myaca-ai:latest
