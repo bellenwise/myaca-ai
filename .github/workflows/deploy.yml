@@ -1,0 +1,42 @@
+# .github/workflows/deploy.yml
+name: Deploy FastAPI App to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd ~/myaca-ai
+
+            # Pull the latest changes from the main branch
+            git pull origin main
+
+            # Create or overwrite the .env file with the content from GitHub Secrets
+            echo "${{ secrets.ENV_FILE }}" > src/.env
+
+            # Install/update dependencies
+            pip install -r requirements.txt
+
+            # Stop any currently running uvicorn process
+            # The '|| true' part ensures that the script doesn't fail if no process is found
+            pkill -f "uvicorn src.main:app" || true
+
+            # Start the FastAPI application in the background using nohup
+            # This will run the app on port 8000. Change the port if needed.
+            nohup uvicorn src.main:app --host 0.0.0.0 --port 8000 &
