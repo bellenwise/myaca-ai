@@ -13,16 +13,21 @@ from src.utils.guard_injection import guard_injection
 logger=logging.getLogger(__name__)
 dotenv.load_dotenv()
 
-def response_chat(chatRequest: ChatRequest, authorization: str):
+def response_chat(chat_request: ChatRequest, authorization: str):
     """
     학생의 질문 사항과 문제, 학생의 제출물을 기반으로 학생의 질문에 대한 답을 리턴하는 함수
     Args:
-        chatRequest:
+        authorization:
+        chat_request:
 
     Returns:
 
     """
-    ddb = boto3.resource('dynamodb')
+    ddb = boto3.resource(
+        'dynamodb',
+        region_name='ap-northeast-2',
+        endpoint_url='http://localhost:8000'
+    )
 
     sub, ok, e = extract_claim_sub(authorization)
     if not ok:
@@ -30,7 +35,7 @@ def response_chat(chatRequest: ChatRequest, authorization: str):
         return UnauthorizedResponse
 
     # injection Guard
-    if not guard_injection(chatRequest.question) :
+    if not guard_injection(chat_request.question) :
         return BaseResponse(
             status_code=403,
             message="Forbidden",
@@ -39,12 +44,12 @@ def response_chat(chatRequest: ChatRequest, authorization: str):
 
     # Get problem from ddb-problems
     problem = ddb.Table("problems").get_item(
-        Key={"PK": ChatRequest.acaID, "SK": f"PROBLEM#{ChatRequest.problemId}"}
+        Key={"PK": chat_request.acaId, "SK": f"PROBLEM#{chat_request.problemId}"}
     )
 
     # Get submission from ddb-assignment_submits
     submission = ddb.Table("assignment_submits").get_item(
-        Key={"PK": ChatRequest.assignmentUuid, "SK": f"{sub}#{ChatRequest.problemId}"}
+        Key={"PK": f"ASSIGNMENT#{chat_request.assignmentUuid}", "SK": f"{sub}#{chat_request.problemId}"}
     )
 
     # Request to LLM to get response with problem and submission
@@ -72,7 +77,7 @@ def response_chat(chatRequest: ChatRequest, authorization: str):
             """
     prompt = PromptTemplate(
         template=chat_prompt,
-        input_variables=[problem, submission, ChatRequest.question],
+        input_variables=["problem", "submission", "question"],
         partial_variables={
             "format_instructions": parser.get_format_instructions()
         }
@@ -82,7 +87,7 @@ def response_chat(chatRequest: ChatRequest, authorization: str):
     llm_response = chain.run(
         problem=problem,
         submission=submission,
-        question=chatRequest.question,
+        question=chat_request.question,
     )
 
     chat_result = parser.parse(llm_response)

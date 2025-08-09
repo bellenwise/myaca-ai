@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class ChatRequest(BaseModel):
-    acaID: str
+    acaId: str
     assignmentUuid: str
     problemId: str
     question: str

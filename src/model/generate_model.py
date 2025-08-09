@@ -6,7 +6,7 @@ class GenerateRequest(BaseModel):
     aca_id : project subdomain
     problemID : problem identifier
     """
-    acaID : str
-    problemID : str
+    acaId : str
+    problemId : str
 
 

@@ -2,9 +2,6 @@ from pydantic import BaseModel
 
 
 class AnalysisRequest(BaseModel):
-    userToken: str
-    acaID: str
+    acaId: str
     assignmentUuid: str
-    questionNo: str
-    message: str
-    context: list[str]
+    problemId: str

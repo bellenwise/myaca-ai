@@ -1,5 +1,5 @@
 from langchain_core.output_parsers import PydanticOutputParser
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conlist
 
 class AnalysisResult(BaseModel):
     analysis : str = Field(description="Submission Explanation Result")
@@ -14,7 +14,16 @@ class ChatResult(BaseModel):
 
 
 class GenerateResult(BaseModel):
-    generate : str = Field(description="Generate Problem Result")
+    category: str = Field(description="Category of the problem")
+    name: str = Field(description="Name or title of the problem")
+    choices: conlist(str, min_length=1) = Field(description="List of choices for a multiple-choice problem")
+    answers: str = Field(description="The correct answer to the problem")
+    question: str = Field(description="The problem statement or question")
+    tags: conlist(str) = Field(description="List of tags related to the problem")
+    type: conlist(str, min_length=1) = Field(description="List of problem types (e.g., 'select', 'multi')")
+    imageURL: str = Field(description="URL to an image related to the problem")
+    solution: str = Field(description="Detailed solution for the problem")
+    problemId: str = Field(description="ID of the problem")
 
 
 class TitleResult(BaseModel):
