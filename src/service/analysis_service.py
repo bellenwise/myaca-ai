@@ -1,5 +1,6 @@
 import logging
 import boto3
+import dotenv
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from src.model.analysis_model import *
@@ -11,6 +12,7 @@ from src.model.outputParser import AnalysisResult, ReasonResult
 from src.model.categories import categories
 
 logger = logging.getLogger(__name__)
+dotenv.load_dotenv()
 
 def submission_analysis(analysisRequest : AnalysisRequest, authorization: str):
     """

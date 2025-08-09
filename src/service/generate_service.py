@@ -1,8 +1,6 @@
-from pyexpat.errors import messages
-
 import boto3
 import logging
-
+import dotenv
 from langchain.chains.llm import LLMChain
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
@@ -12,6 +10,7 @@ from src.model.response_model import *
 from src.utils.extract_claim_sub import extract_claim_sub
 
 logger = logging.getLogger(__name__)
+dotenv.load_dotenv()
 
 def  generate_problem(generateRequest: GenerateRequest, authorization: str):
     """
