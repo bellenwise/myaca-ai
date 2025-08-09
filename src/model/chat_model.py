@@ -1,8 +1,14 @@
 from pydantic import BaseModel
+from typing import Union
 
 
 class ChatRequest(BaseModel):
-    acaId: str
+    acaSubdomain: str
     assignmentUuid: str
     problemId: str
-    question: str
+    message: str
+    context: Union[list[str], None] = None
+
+
+class ChatResponse(BaseModel):
+    message: str
