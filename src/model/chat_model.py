@@ -2,8 +2,7 @@ from pydantic import BaseModel
 
 
 class ChatRequest(BaseModel):
-    userToken: str
+    acaID: str
     assignmentUuid: str
-    questionNo: str
-    message: str
-    context: list[str]
+    problemId: str
+    question: str
