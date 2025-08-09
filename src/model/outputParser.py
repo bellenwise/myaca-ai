@@ -12,3 +12,10 @@ class ReasonResult(BaseModel):
 class ChatResult(BaseModel):
     chat : str = Field(description="Question Response")
 
+
+class GenerateResult(BaseModel):
+    generate : str = Field(description="Generate Problem Result")
+
+
+class TitleResult(BaseModel):
+    title : str = Field(description="Title Response")
