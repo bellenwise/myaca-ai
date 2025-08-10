@@ -24,8 +24,9 @@ def image_process(i_p_request: ImageProcessRequest, authorization: str):
         authorization: 헤더의 Authorization 필드
         i_p_request: 이미지 프로세싱 요청
             - imageURL: 외부에서 읽어올 이미지 주소
-            - subdomain_name: 학원 id
-            - assignment_id : 과제 id
+            - acaId: 학원 id
+            - assignmentUuid : 과제 id
+            - problemId : 문제 id
 
     Returns:
         if success : SuccessResponse

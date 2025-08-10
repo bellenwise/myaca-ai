@@ -5,3 +5,4 @@ class ImageProcessRequest(BaseModel):
     acaId: str
     assignmentUuid: str
     problemId: str
+    imageURL: str
