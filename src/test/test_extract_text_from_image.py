@@ -1,6 +1,6 @@
 import os
 import pytest
-from src.utils.extract_text_from_image import extract_text_from_image
+from src.utils.image2text import extract_text_from_image
 from dotenv import load_dotenv
 
 # .env 파일 로드

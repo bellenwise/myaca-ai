@@ -28,3 +28,11 @@ class GenerateResult(BaseModel):
 
 class TitleResult(BaseModel):
     title : str = Field(description="Title Response")
+
+
+class ModifyResult(BaseModel):
+    text: str = Field(description="validated_text")
+
+
+class ValidResult(BaseModel):
+    validity: bool = Field(description="True or False")
