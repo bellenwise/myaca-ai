@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Header
-from src.model.analysis_model import AnalysisRequest
-from src.service import chat_service, analysis_service, generate_service
+from src.model.image_model import ImageProcessRequest
+from src.service import chat_service, image_service, generate_service
 from src.model.chat_model import *
 from src.model.generate_model import *
 
@@ -18,5 +18,5 @@ def generate_problem(generate_request: GenerateRequest, authorization: str = Hea
 
 
 @app.post("/analysis")
-def submission_analysis(analysis_request: AnalysisRequest, authorization: str = Header(None)):
-    return analysis_service.submission_analysis(analysis_request, authorization)
+def submission_analysis(analysis_request: ImageProcessRequest, authorization: str = Header(None)):
+    return analysis_service.image_process(analysis_request, authorization)

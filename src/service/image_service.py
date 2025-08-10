@@ -4,7 +4,7 @@ import dotenv
 import json
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-from src.model.analysis_model import *
+from src.model.image_model import *
 from src.model.response_model import *
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
@@ -15,15 +15,24 @@ from src.utils.extract_claim_sub import extract_claim_sub
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
 
-def submission_analysis(analysisRequest : AnalysisRequest, authorization: str):
+def image_process(i_p_request: ImageProcessRequest, authorization: str):
     """
-    학생의 문제 풀이와 문제 솔루션을 비교 분석하여 분석 결과와 틀린 이유를 ddb에 업데이트하는 함수
+    학생의 explanation 이미지를 텍스트로 변환하고,
+    변환된 텍스트의 유효성을 판단하여 ddb 저장 또는 반려하는 함수
+
     Args:
-        analysisRequest:
+        authorization: 헤더의 Authorization 필드
+        i_p_request: 이미지 프로세싱 요청
+            - imageURL: 외부에서 읽어올 이미지 주소
+            - subdomain_name: 학원 id
+            - assignment_id : 과제 id
 
     Returns:
+        if success : SuccessResponse
+        Otherwise : InternalServerConflictResponse
 
     """
+
     ddb = boto3.resource(
         'dynamodb',
         region_name='ap-northeast-2',
@@ -35,15 +44,15 @@ def submission_analysis(analysisRequest : AnalysisRequest, authorization: str):
         logger.error(e)
         return UnauthorizedResponse
 
-    # Get submission from ddb-assignment_submits
+    # Get submission image from URL link
     submission = ddb.Table("assignment_submits").get_item(
-        Key={"PK": f"ASSIGNMENT#{analysisRequest.assignmentUuid}", "SK": f"{sub}#{analysisRequest.problemId}"}
+        Key={"PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}", "SK": f"{sub}#{i_p_request.problemId}"}
     )
     explanation = submission.get('Item', {}).get('Explanation', "")
 
     # Get solution from ddb-problems
     problem = ddb.Table("problems").get_item(
-        Key={"PK": analysisRequest.acaId, "SK": f"PROBLEM#{analysisRequest.problemId}"}
+        Key={"PK": i_p_request.acaId, "SK": f"PROBLEM#{i_p_request.problemId}"}
     )
     solution = problem.get("Item", {}).get('Solution', '')
 
@@ -117,7 +126,7 @@ def submission_analysis(analysisRequest : AnalysisRequest, authorization: str):
 
     # Update analysis into ddb-assignment_submits
     ddb.Table("assignment_submits").update_item(
-        Key={"PK": f"ASSIGNMENT#{analysisRequest.assignmentUuid}", "SK": f"sub1#{analysisRequest.problemId}"},
+        Key={"PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}", "SK": f"sub1#{i_p_request.problemId}"},
         UpdateExpression="SET Analysis = :a, IncorrectReason = :ir",
         ExpressionAttributeValues={
             ":a": analysis_result.analysis,
@@ -133,8 +142,8 @@ def submission_analysis(analysisRequest : AnalysisRequest, authorization: str):
 
     ddb.Table("problems").update_item(
         Key={
-            "PK": analysisRequest.acaId,
-            "SK": f"PROBLEM#{analysisRequest.problemId}"
+            "PK": i_p_request.acaId,
+            "SK": f"PROBLEM#{i_p_request.problemId}"
         },
         UpdateExpression="SET IncorrectCount = :inc",
         ExpressionAttributeValues={
@@ -143,3 +152,6 @@ def submission_analysis(analysisRequest : AnalysisRequest, authorization: str):
     )
 
     return SuccessResponse()
+
+
+
