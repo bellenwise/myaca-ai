@@ -1,6 +1,6 @@
 import os
 import pytest
-from src.utils.image2text import extract_text_from_image
+from src.utils.image2text import image2text
 from dotenv import load_dotenv
 
 # .env 파일 로드
@@ -36,7 +36,7 @@ def test_extract_text_successfully(setup_test_image):
     valid_image_path = setup_test_image
 
     # When: 테스트 대상 함수를 호출합니다.
-    extracted_text = extract_text_from_image(valid_image_path)
+    extracted_text = image2text(valid_image_path)
 
     # Then: 추출된 텍스트가 비어있지 않음을 검증하고 터미널에 출력합니다.
     assert extracted_text is not None
@@ -58,7 +58,7 @@ def test_extract_text_with_invalid_path():
     invalid_path = "non_existent_file.jpg"
 
     # When: 함수를 호출합니다.
-    extracted_text = extract_text_from_image(invalid_path)
+    extracted_text = image2text(invalid_path)
 
     # Then: 예상한 에러 메시지를 반환하는지 확인합니다.
     assert extracted_text == "invalid file path"

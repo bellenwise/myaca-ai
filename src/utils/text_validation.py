@@ -10,7 +10,7 @@ llm = ChatOpenAI(
     temperature=0.5
 )
 
-def text_validation(text: str) -> bool :
+def text_validation(text: str) -> (bool, str) :
     """
     LLM을 사용해 텍스트로 변환된 결과물에 대해, 사용 가능한지 검사합니다.
 
@@ -18,8 +18,8 @@ def text_validation(text: str) -> bool :
         text: 이미지로부터 추출된 텍스트
 
     Outputs:
-        if success: True
-        Otherwise : False
+        if success: True, text
+        Otherwise : False, ""
     """
 
     # Modify text
@@ -86,5 +86,5 @@ def text_validation(text: str) -> bool :
 
     validate_result = parser.parse(llm_response)
 
-    if validate_result.validity: return True
-    else : return False
+    if validate_result.validity: return True, modify_result.text
+    else : return False, ""

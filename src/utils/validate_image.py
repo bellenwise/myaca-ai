@@ -3,7 +3,7 @@ from PIL import Image
 from io import BytesIO
 
 
-def validate_image_link(url, max_size_mb=5):
+def validate_image_url(url, max_size_mb=5):
     """
     이미지 링크로부터 유효성을 검사하는 함수
 

@@ -11,6 +11,9 @@ from langchain.chains import LLMChain
 from src.model.outputParser import AnalysisResult, ReasonResult
 from src.model.categories import categories
 from src.utils.extract_claim_sub import extract_claim_sub
+from src.utils.image2text import image2text
+from src.utils.text_validation import text_validation
+from src.utils.validate_image import validate_image_url
 
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
@@ -34,28 +37,53 @@ def image_process(i_p_request: ImageProcessRequest, authorization: str):
 
     """
 
+    # init
     ddb = boto3.resource(
         'dynamodb',
         region_name='ap-northeast-2',
         endpoint_url='http://localhost:8000'
     )
+    llm = ChatOpenAI(model="gpt-4o", temperature=0.5)
 
+    # authentification
     sub, ok, e = extract_claim_sub(authorization)
     if not ok:
         logger.error(e)
         return UnauthorizedResponse
 
-    # Get submission image from URL link
-    submission = ddb.Table("assignment_submits").get_item(
-        Key={"PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}", "SK": f"{sub}#{i_p_request.problemId}"}
-    )
-    explanation = submission.get('Item', {}).get('Explanation', "")
+    # Get submission image from image URL
+    if not validate_image_url(i_p_request.imageURL) :
+        return BadRequestResponse(data="invalid URL")
 
-    # Get solution from ddb-problems
-    problem = ddb.Table("problems").get_item(
-        Key={"PK": i_p_request.acaId, "SK": f"PROBLEM#{i_p_request.problemId}"}
-    )
-    solution = problem.get("Item", {}).get('Solution', '')
+    # image2text
+    try :
+        converted_text = image2text(i_p_request.imageURL)
+    except Exception as e :
+        return InternalServerErrorResponse(message="failed to convert image to text")
+
+    # Text Validity Check
+    validity, text_saved = text_validation(converted_text)
+    if not validity :
+        return InternalServerErrorResponse(message="failed to convert image to text")
+
+    # DDB interaction
+    try :
+        submission = ddb.Table("assignment_submits").get_item(
+            Key={
+                "PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}",
+                 "SK": f"{sub}#{i_p_request.problemId}"
+            }
+        )
+        explanation = submission.get('Item', {}).get('Explanation', "")
+
+        # Get solution from ddb-problems
+        problem = ddb.Table("problems").get_item(
+            Key={"PK": i_p_request.acaId, "SK": f"PROBLEM#{i_p_request.problemId}"}
+        )
+        solution = problem.get("Item", {}).get('Solution', '')
+
+    except Exception as e :
+        return InternalServerErrorResponse(message="failed to get item from ddb")
 
     # Request analysis to LLM with submission and solution
     llm = ChatOpenAI(
@@ -87,7 +115,7 @@ def image_process(i_p_request: ImageProcessRequest, authorization: str):
 
     chain = LLMChain(llm=llm, prompt=prompt)
     llm_response = chain.run(
-        explanation=explanation,
+        explanation=text_saved,
         solution=solution,
     )
 
@@ -124,33 +152,35 @@ def image_process(i_p_request: ImageProcessRequest, authorization: str):
 
     categorize_result = parser.parse(llm_response)
 
+    # Update analysis into ddb-assignment_submits\
+    try :
+        ddb.Table("assignment_submits").update_item(
+            Key={"PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}", "SK": f"{sub}#{i_p_request.problemId}"},
+            UpdateExpression="SET Analysis = :a, IncorrectReason = :ir",
+            ExpressionAttributeValues={
+                ":a": analysis_result.analysis,
+                ":ir": categorize_result.reason,
+            }
+        )
 
-    # Update analysis into ddb-assignment_submits
-    ddb.Table("assignment_submits").update_item(
-        Key={"PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}", "SK": f"sub1#{i_p_request.problemId}"},
-        UpdateExpression="SET Analysis = :a, IncorrectReason = :ir",
-        ExpressionAttributeValues={
-            ":a": analysis_result.analysis,
-            ":ir": categorize_result.reason,
-        }
-    )
+        # Update incorrect_reason into ddb-problems
+        item = problem.get("Item", {})
+        inc = item["IncorrectCount"]
+        inc[categorize_result.reason] += 1
 
-    # Update incorrect_reason into ddb-problems
-    item = problem.get("Item", {})
-    inc = item["IncorrectCount"]
-    inc[categorize_result.reason] += 1
+        ddb.Table("problems").update_item(
+            Key={
+                "PK": i_p_request.acaId,
+                "SK": f"PROBLEM#{i_p_request.problemId}"
+            },
+            UpdateExpression="SET IncorrectCount = :inc",
+            ExpressionAttributeValues={
+                ":inc": inc
+            }
+        )
 
-
-    ddb.Table("problems").update_item(
-        Key={
-            "PK": i_p_request.acaId,
-            "SK": f"PROBLEM#{i_p_request.problemId}"
-        },
-        UpdateExpression="SET IncorrectCount = :inc",
-        ExpressionAttributeValues={
-            ":inc": inc
-        }
-    )
+    except Exception as e :
+        return InternalServerErrorResponse(message="failed to update item to ddb")
 
     return SuccessResponse()
 

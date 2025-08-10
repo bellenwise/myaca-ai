@@ -8,7 +8,7 @@ import os
 load_dotenv()
 
 # Prompt
-extract_text_from_image_prompt = """
+image2text_prompt = """
 아래 이미지에서 모든 텍스트를 추출해 주세요.
 
 추출 시 유의사항:
@@ -27,27 +27,30 @@ client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 
-def extract_text_from_image(image_path: str) -> str:
+def image2text(image_url: str) -> str:
     """
     이미지 파일 경로를 입력받아 OpenAI GPT-4o 모델을 사용하여 텍스트를 추출합니다.
 
     Args:
-        image_path (str): 추출할 텍스트가 포함된 이미지 파일의 경로.
+        image_url (str): 추출할 텍스트가 포함된 이미지 파일의 경로.
 
     Returns:
         str: 이미지에서 추출된 텍스트.
     """
-    if not os.path.exists(image_path):
-        return "invalid file path"
 
     try:
-        base64_image = encoder.Encode_image(image_path)
+        if image_url.startswith(("http://", "https://")) :
+            base64_image = encoder.encode_image_from_url(image_url)
+        else :
+            if not os.path.exists(image_url):
+                return "invalid file path"
+            base64_image = encoder.encode_image(image_url)
 
         messages = [
             ChatCompletionUserMessageParam(
                 role="user",
                 content=[
-                    ChatCompletionContentPartTextParam(type="text", text=extract_text_from_image_prompt),
+                    ChatCompletionContentPartTextParam(type="text", text=image2text_prompt),
                     ChatCompletionContentPartImageParam(
                         type="image_url",
                         image_url={
