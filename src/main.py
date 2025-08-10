@@ -8,8 +8,8 @@ app = FastAPI()
 
 
 @app.post("/chat")
-def talk_chatbot(chat_request: ChatRequest, authorization: Union[str, None] = Header(default=None)) -> ChatResponse:
-    return chat_service.response_chat(chat_request, authorization)
+def talk_chatbot(chat_request: ChatRequest, Authorization: Union[str, None] = Header(default=None)) -> ChatResponse:
+    return chat_service.response_chat(chat_request, Authorization)
 
 
 @app.post("/problem/generate")

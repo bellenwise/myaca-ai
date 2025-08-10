@@ -1,6 +1,7 @@
 import dataclasses
 from typing import List, Optional
 
+
 @dataclasses.dataclass
 class CognitoClaims:
     sub: Optional[str] = None
@@ -9,3 +10,7 @@ class CognitoClaims:
     name: Optional[str] = None
     cognito_username: Optional[str] = None
     cognito_groups: Optional[List[str]] = dataclasses.field(default_factory=list)
+
+    def __init__(self, sub: str, cognito_groups: Optional[List[str]] = None, **kwargs):
+        self.sub = sub
+        self.cognito_groups = cognito_groups
