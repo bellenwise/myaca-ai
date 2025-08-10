@@ -44,3 +44,42 @@ def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRe
     return {"message": "success"}
 
 
+def get_landing_page(subdomain: str) -> List[LandingPageRequest]:
+    """
+    랜딩 페이지 정보를 조회합니다.
+
+    Args:
+        subdomain (str): 서브도메인 이름.
+
+    Returns:
+        dict: 랜딩 페이지 정보.
+    """
+    if not subdomain:
+        raise HTTPException(status_code=400, detail="Subdomain is required")
+
+    try:
+        response = ddb.Table("landing_page").get_item(
+            Key={"subdomain": subdomain}
+        )
+    except (BotoCoreError, ClientError) as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve landing page: {e}")
+
+    if 'Item' not in response:
+        raise HTTPException(status_code=404, detail="Landing page not found")
+
+    item = response['Item']
+    image_urls = item.get("imageUrls", [])
+    titles = item.get("titles", [])
+    descriptions = item.get("descriptions", [])
+
+    return [
+        LandingPageRequest(
+            title=title,
+            description=desc,
+            image_url=url
+        )
+        for title, desc, url in zip(titles, descriptions, image_urls)
+    ]
+
+
+    return {"message": "success"}

@@ -28,3 +28,9 @@ def submission_analysis(analysis_request: AnalysisRequest, authorization: str = 
 @app.post("/landing/{subdomain}")
 def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
     return landing_page_service.create_landing_page(subdomain, landing_page_request)
+
+
+@app.get("/landing/{subdomain}")
+def get_landing_page(subdomain: str) -> List[LandingPageRequest]:
+    return landing_page_service.get_landing_page(subdomain)
+
