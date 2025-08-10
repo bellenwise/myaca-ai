@@ -34,3 +34,7 @@ def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRe
 def get_landing_page(subdomain: str) -> List[LandingPageRequest]:
     return landing_page_service.get_landing_page(subdomain)
 
+
+@app.put("/landing/{subdomain}")
+def update_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
+    return landing_page_service.update_landing_page(subdomain, landing_page_request)
