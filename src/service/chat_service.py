@@ -31,11 +31,10 @@ def response_chat(chat_request: ChatRequest, authorization: str) -> ChatResponse
 
     """
 
-    # sub, ok, e = extract_claim_sub(authorization)
-    # if not ok:
-    #     logger.error(e)
-    #     raise HTTPException(status_code=401, detail="Unauthorized: Invalid or missing authorization token")
-    sub = authorization
+    sub, ok, e = extract_claim_sub(authorization)
+    if not ok:
+        logger.error(e)
+        raise HTTPException(status_code=401, detail="Unauthorized: Invalid or missing authorization token")
 
     # injection Guard
     if not guard_injection(chat_request.message):
