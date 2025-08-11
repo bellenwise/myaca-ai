@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Header
 from src.model.analysis_model import AnalysisRequest
 from src.model.landing_page_model import LandingPageRequest
-from src.model.problem_model import ProblemStatsModel
+from src.model.problem_model import ProblemStatsModel, AssignmentReview
 from src.service import chat_service, analysis_service, generate_service, landing_page_service, problem_service
 from src.model.chat_model import *
 from src.model.generate_model import *
@@ -44,3 +44,8 @@ def update_landing_page(subdomain: str, landing_page_request: List[LandingPageRe
 @app.get("/problem/stats", summary="문제에 대한 통계를 조회하는 API")
 def get_problem_stats(subdomain: str, problem_id: str) -> ProblemStatsModel:
     return problem_service.get_problem_stats(subdomain, problem_id)
+
+
+@app.get("/review", summary="학생의 과제 분석 결과를 조회하는 API")
+def get_student_assignment_review(student_id: str, assignment_id: str) -> List[AssignmentReview]:
+    return problem_service.get_student_assignment_review(student_id, assignment_id)
