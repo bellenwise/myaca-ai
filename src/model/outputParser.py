@@ -30,9 +30,19 @@ class TitleResult(BaseModel):
     title : str = Field(description="Title Response")
 
 
+
+class ModifyResult(BaseModel):
+    text: str = Field(description="validated_text")
+
+
+class ValidResult(BaseModel):
+    validity: bool = Field(description="True or False")
+
+      
 class AssignmentAnalysisResult(BaseModel):
     analysis : str = Field(description="Assignment Analysis Result")
     incorrect_count: int = Field(description="Number of incorrect answers")
     incorrect_reasons: Dict[str, int] = Field(description="IncorrectReason Total Count Map")
     score_avg : float = Field(description="Submission Score Average")
     total_count : int = Field(description="Submission Total Count")
+

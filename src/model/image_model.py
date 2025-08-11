@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 
-class ImageGenerationRequest(BaseModel):
-    title: str
-    description: str
-    style: str
+
+class ImageProcessRequest(BaseModel):
+    acaId: str
+    assignmentUuid: str
+    problemId: str
+    imageURL: str

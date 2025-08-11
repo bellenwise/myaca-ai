@@ -2,14 +2,14 @@ import boto3
 import logging
 import dotenv
 from langchain.chains.llm import LLMChain
+from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from src.model.outputParser import *
 from src.model.chat_model import ChatRequest, ChatResponse
-from src.model.response_model import *
 from src.utils.extract_claim_sub import extract_claim_sub
 from src.utils.guard_injection import guard_injection
-from fastapi import HTTPException, BackgroundTasks
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()

@@ -14,7 +14,7 @@ from src.utils.extract_claim_sub import extract_claim_sub
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
 
-def  generate_problem(generateRequest: GenerateRequest, authorization: str):
+def  generate_problem(generate_request: GenerateRequest, authorization: str):
     """
         AWS DynamoDB에서 학생의 과제 제출 결과를 조회하여 반환합니다.
 
@@ -38,7 +38,7 @@ def  generate_problem(generateRequest: GenerateRequest, authorization: str):
 
     # Get Problem with acaID & problemID from ddb-problems
     problem = ddb.Table("problems").get_item(
-        Key={"PK": generateRequest.acaId, "SK": f"PROBLEM#{generateRequest.problemId}"}
+        Key={"PK": generate_request.acaId, "SK": f"PROBLEM#{generate_request.problemId}"}
     )
 
     # Request to LLM that a kind of problem of selected problem
@@ -54,7 +54,7 @@ def  generate_problem(generateRequest: GenerateRequest, authorization: str):
         당신은 수학 교사입니다.
         다음은 문제, 문제를 틀린 학생들의 틀린 이유와 그 수입니다.
         문제: {problem}
-        틀린 이유와 그 수: {IncorrectCount}
+        틀린 이유와 그 수: {IncorrectReason}
 
         문제, 정답률, 틀린 이유를 바탕으로 다음과 같은 지침에 따라 문제와 비슷한 문제를 생성해 주세요.
         1. 총 제출자와 틀린 이유의 수를 기반으로 정답률을 고려해 문제의 복잡도를 전체 학생 수준의 중간으로 조정해 주세요.
@@ -66,7 +66,7 @@ def  generate_problem(generateRequest: GenerateRequest, authorization: str):
     """
     prompt = PromptTemplate(
         template=generate_prompt,
-        input_variables=[problem, problem.get('IncorrectCount', {}).get('N')],
+        input_variables=["problem", "IncorrectReason"],
         partial_variables={
             "format_instructions": parser.get_format_instructions()
         }
@@ -75,7 +75,7 @@ def  generate_problem(generateRequest: GenerateRequest, authorization: str):
     chain = LLMChain(llm=llm, prompt=prompt)
     llm_response = chain.run(
         problem=problem,
-        IncorrectCount=problem.get('IncorrectCount', {}).get('N'),
+        IncorrectReason=problem.get('IncorrectReason', {}).get('N'),
     )
 
     generate_result = parser.parse(llm_response)
@@ -103,7 +103,7 @@ def  generate_problem(generateRequest: GenerateRequest, authorization: str):
     """
     prompt = PromptTemplate(
         template=title_prompt,
-        input_variables=[problem, generate_result],
+        input_variables=["problem", "generate_result"],
         partial_variables={
             "format_instructions": parser.get_format_instructions()
         }
@@ -115,13 +115,14 @@ def  generate_problem(generateRequest: GenerateRequest, authorization: str):
         generate_result=generate_result,
     )
 
+    title_result = parser.parse(llm_response)
+
     # Formatting title and generated problem into problem-ddb-format
-    ddb.Table("problems").put_item(
-        Item={
-            "PK": generateRequest.acaId,
+    response_item = {
+            "PK": generate_request.acaId,
             "SK": f"PROBLEM#{new_problem_id}",
             "Category": generate_result.category,
-            "Name": generate_result.name,
+            "Name": title_result.title,
             "Choices": generate_result.choices,
             "Answer": generate_result.answers,
             "Question": generate_result.question,
@@ -129,30 +130,28 @@ def  generate_problem(generateRequest: GenerateRequest, authorization: str):
             "Type": generate_result.type,
             "ImageURL": generate_result.imageURL,
             "TotalSolved": 0,
-            "incorrectCount": {},
+            "IncorrectCount": 0,
+            "IncorrectReasons": {
+                "개념 부족" : 0,
+                "적용 오류" : 0,
+                "문제 해석 오류" : 0,
+                "정보 누락/오독" : 0,
+                "계산 실수" : 0,
+                "논리적 오류" : 0,
+                "선택지 오해" : 0,
+                "추론 실패" : 0,
+                "오타" : 0,
+            },
             "Solution": generate_result.solution,
-        },
+        }
+
+    ddb.Table("problems").put_item(
+        Item= response_item,
         ConditionExpression="attribute_not_exists(SK)"
     )
 
     # return new ddb-formatted problem
-    return BaseResponse(
-        status_code=200,
-        message="Success",
-        data = {
-            "PK": generateRequest.acaId,
-            "SK": f"PROBLEM#{new_problem_id}",
-            "Category": generate_result.category,
-            "Name": generate_result.name,
-            "Choices": generate_result.choices,
-            "Answer": generate_result.answers,
-            "Question": generate_result.question,
-            "Tags": generate_result.tags,
-            "Type": generate_result.type,
-            "ImageURL": generate_result.imageURL,
-            "TotalSolved": 0,
-            "incorrectCount": {},
-            "Solution": generate_result.solution,
-        }
+    return SuccessResponse(
+        data = response_item
     )
 

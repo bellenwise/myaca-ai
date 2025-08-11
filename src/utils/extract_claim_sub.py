@@ -3,7 +3,7 @@ import json
 import logging
 import binascii
 from typing import Optional, Tuple
-import src.ctypes.cognito as Cognito
+from src.model.cognito import CognitoClaims
 
 def extract_claim_sub(header: str) -> Tuple[str, bool, Optional[Exception]]:
     """
@@ -40,7 +40,7 @@ def extract_claim_sub(header: str) -> Tuple[str, bool, Optional[Exception]]:
         payload = base64.urlsafe_b64decode(payload_base64).decode('utf-8')
 
         claims_data = json.loads(payload)
-        claims = Cognito.CognitoClaims(**claims_data)
+        claims = CognitoClaims(**claims_data)
 
         if claims.sub:
             return claims.sub, True, None
