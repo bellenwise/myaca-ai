@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class ImageProcessRequest(BaseModel):
-    acaId: str
+    studentId: str
     assignmentUuid: str
     problemId: str
     imageURL: str

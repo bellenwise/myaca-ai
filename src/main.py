@@ -29,8 +29,8 @@ def generate_problem(generate_request: GenerateRequest, authorization: str = Hea
 
 
 @app.post("/submission/analyze",summary="학생 제출 이미지 텍스트 분석 및 저장")
-def image_analysis(analysis_request: ImageProcessRequest, authorization: str = Header(None)) -> BaseResponse:
-    return image_process_service.image_process(analysis_request, authorization)
+def image_analysis(analysis_request: ImageProcessRequest) -> BaseResponse:
+    return image_process_service.image_process(analysis_request)
 
 
 @app.post("/submission/analyze", summary="학생 제출물과 솔루션 비교 분석")
