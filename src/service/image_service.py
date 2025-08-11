@@ -1,8 +1,6 @@
-import io
 from openai import OpenAI
 import base64
 from fastapi.responses import Response
-
 from src.model.image_model import ImageGenerationRequest
 
 client = OpenAI()

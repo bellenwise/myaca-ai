@@ -12,8 +12,10 @@ from src.model.outputParser import AssignmentAnalysisResult
 from src.model.response_model import BaseResponse, SuccessResponse, UnauthorizedResponse
 from src.utils.extract_claim_sub import extract_claim_sub
 
+
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
+
 
 def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
     """
