@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import FastAPI, Header
-from src.model.assignment_model import AssignmentAnalysisRequest
+from src.model.assignment_model import AssignmentAnalysisRequest, GetAssignmentAnalysisRequest
 from src.model.problem_model import ProblemStatsModel, AssignmentReview
 from src.model.submission_model import SubmissionAnalysisRequest
 from src.model.landing_page_model import LandingPageRequest
@@ -34,8 +34,8 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
 
 
 @app.get("/assignment/analysis")
-def get_assignment_analysis(g_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
-    return assignment_analysis_service.get_assignment_analysis(g_a_request, authorization)
+def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
+    return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)
 
 # 랜딩 페이지 CRUD
 @app.post("/landing/{subdomain}")
