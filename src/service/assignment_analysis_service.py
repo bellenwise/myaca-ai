@@ -7,7 +7,7 @@ from boto3.dynamodb.conditions import Key
 from langchain.chains.llm import LLMChain
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-from src.model.assignment_model import AssignmentAnalysisRequest
+from src.model.assignment_model import AssignmentAnalysisRequest, GetAssignmentAnalysisRequest
 from src.model.outputParser import AssignmentAnalysisResult
 from src.model.response_model import BaseResponse, SuccessResponse, UnauthorizedResponse
 from src.utils.extract_claim_sub import extract_claim_sub
@@ -132,12 +132,12 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
         )
 
 
-def get_assignment_analysis(g_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
+def get_assignment_analysis(acaId, assignmentId, authorization: str = Header(None)) -> BaseResponse:
     """
     과제 메타데이터와 개별 문항 내용을 조회하는 함수
     Args:
         g_a_request:
-            courseId: 과제 조회를 위한
+            acaId: 과제 조회를 위한
             assignmentId: 과제 조회를 위한
         authorization: Header
 
@@ -146,25 +146,18 @@ def get_assignment_analysis(g_a_request: AssignmentAnalysisRequest, authorizatio
     """
 
     # init
-    ddb = boto3.resource("dynamodb")
+    ddb = boto3.resource(
+        service_name="dynamodb",
+        region_name="ap-northeast-2")
 
     # Get Assignment Meta from ddb-assignment_submits
     assignment_meta = ddb.Table("assignment_submits").get_item(
         Key={
-            "PK": f"ASSIGNMENT#{g_a_request.assignmentId}",
+            "PK": f"ASSIGNMENT#{assignmentId}",
             "SK": "INFO",
         }
     )
     assignment_meta = assignment_meta.get("Item", {})
-
-    # Get problem list from ddb-academies
-    problems = ddb.Table("academies").get_item(
-        Key={
-            "PK": f"COURSE#{g_a_request.courseId}",
-            "SK": f"ASSIGNMENT#{g_a_request.assignmentId}",
-        }
-    )
-    problem_list = problems.get("Items", {}).get("Problems", [])
 
     # Formatting
     response_data = {

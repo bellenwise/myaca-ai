@@ -8,5 +8,4 @@ class AssignmentAnalysisRequest(BaseModel):
 
 class GetAssignmentAnalysisRequest(BaseModel):
     acaId: str
-    courseId: str
     assignmentId: str
