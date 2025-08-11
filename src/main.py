@@ -1,8 +1,11 @@
 from fastapi import FastAPI, Header
-from src.model.analysis_model import AnalysisRequest
+
+from src.model.assignment_model import AssignmentAnalysisRequest
+from src.model.submission_model import SubmissionAnalysisRequest
 from src.model.landing_page_model import LandingPageRequest
-from src.model.problem_model import ProblemStatsModel, AssignmentReview
-from src.service import chat_service, analysis_service, generate_service, landing_page_service, problem_service
+from src.model.response_model import BaseResponse
+from src.service import chat_service, submission_analysis_service, generate_service, landing_page_service, \
+    assignment_analysis_service
 from src.model.chat_model import *
 from src.model.generate_model import *
 from typing import List
@@ -20,10 +23,14 @@ def generate_problem(generate_request: GenerateRequest, authorization: str = Hea
     return generate_service.generate_problem(generate_request, authorization)
 
 
-@app.post("/analysis")
-def submission_analysis(analysis_request: AnalysisRequest, authorization: str = Header(None)):
-    return analysis_service.submission_analysis(analysis_request, authorization)
+@app.post("/submit/analyze")
+def analyze_submission(a_s_request: SubmissionAnalysisRequest, authorization: str = Header(None)):
+    return submission_analysis_service.analyze_submission(a_s_request, authorization)
 
+
+@app.post("/assignment/analyze")
+def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse :
+    return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
 
 # 랜딩 페이지 CRUD
 @app.post("/landing/{subdomain}")
