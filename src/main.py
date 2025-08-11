@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Header
-
+from fastapi import FastAPI, Header, Response
 from src.model.assignment_model import AssignmentAnalysisRequest
+from src.model.image_model import ImageGenerationRequest
+from src.model.problem_model import ProblemStatsModel, AssignmentReview
 from src.model.submission_model import SubmissionAnalysisRequest
 from src.model.landing_page_model import LandingPageRequest
 from src.model.response_model import BaseResponse
 from src.service import chat_service, submission_analysis_service, generate_service, landing_page_service, \
-    assignment_analysis_service
+    assignment_analysis_service, problem_service, image_service
 from src.model.chat_model import *
 from src.model.generate_model import *
 from typing import List
@@ -29,8 +30,9 @@ def analyze_submission(a_s_request: SubmissionAnalysisRequest, authorization: st
 
 
 @app.post("/assignment/analyze")
-def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse :
+def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
     return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
+
 
 # 랜딩 페이지 CRUD
 @app.post("/landing/{subdomain}")
@@ -56,3 +58,8 @@ def get_problem_stats(subdomain: str, problem_id: str) -> ProblemStatsModel:
 @app.get("/review", summary="학생의 과제 분석 결과를 조회하는 API")
 def get_student_assignment_review(student_id: str, assignment_id: str) -> List[AssignmentReview]:
     return problem_service.get_student_assignment_review(student_id, assignment_id)
+
+
+@app.post("/image_generation", summary="이미지 생성 요청 API")
+def image_generation(image_request: ImageGenerationRequest) -> Response:
+    return image_service.generate_image(image_request)
