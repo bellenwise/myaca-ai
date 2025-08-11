@@ -46,3 +46,13 @@ def get_landing_page(subdomain: str) -> List[LandingPageRequest]:
 @app.put("/landing/{subdomain}")
 def update_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
     return landing_page_service.update_landing_page(subdomain, landing_page_request)
+
+
+@app.get("/problem/stats", summary="문제에 대한 통계를 조회하는 API")
+def get_problem_stats(subdomain: str, problem_id: str) -> ProblemStatsModel:
+    return problem_service.get_problem_stats(subdomain, problem_id)
+
+
+@app.get("/review", summary="학생의 과제 분석 결과를 조회하는 API")
+def get_student_assignment_review(student_id: str, assignment_id: str) -> List[AssignmentReview]:
+    return problem_service.get_student_assignment_review(student_id, assignment_id)
