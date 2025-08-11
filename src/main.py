@@ -1,4 +1,3 @@
-
 from typing import TypeVar
 from src.model.image_model import ImageProcessRequest, ImageGenerationRequest
 from src.service import image_process_service
@@ -19,54 +18,47 @@ T = TypeVar('T')
 app = FastAPI()
 
 
-# 학생 LLM 채팅
-@app.post("/chat")
+@app.post("/chat", summary="학생 LLM 채팅")
 def talk_chatbot(chat_request: ChatRequest, Authorization: Union[str, None] = Header(default=None)) -> ChatResponse:
     return chat_service.response_chat(chat_request, Authorization)
 
 
-# 관리자 비슷한 문제 생성
-@app.post("/problem/generate")
+@app.post("/problem/generate", summary="관리자 비슷한 문제 생성")
 def generate_problem(generate_request: GenerateRequest, authorization: str = Header(None)) -> BaseResponse:
     return generate_service.generate_problem(generate_request, authorization)
 
 
-# 학생 제출 이미지 텍스트 분석 및 저장
-@app.post("/submission/analyze")
+@app.post("/submission/analyze",summary="학생 제출 이미지 텍스트 분석 및 저장")
 def image_analysis(analysis_request: ImageProcessRequest, authorization: str = Header(None)) -> BaseResponse:
     return image_process_service.image_process(analysis_request, authorization)
 
 
-# 학생 제출물과 솔루션 비교 분석
-@app.post("/submission/analyze")
+@app.post("/submission/analyze", summary="학생 제출물과 솔루션 비교 분석")
 def analyze_submission(a_s_request: SubmissionAnalysisRequest, authorization: str = Header(None)):
     return submission_analysis_service.analyze_submission(a_s_request, authorization)
 
 
-# 과제 마감 후 제출물 분석
-@app.post("/assignment/analyze")
+@app.post("/assignment/analyze", summary="과제 마감 후 제출물 분석")
 def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
     return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
 
 
-# 과제 분석 내용 조회
-@app.get("/assignment/analysis")
+@app.get("/assignment/analysis", summary="과제 분석 내용 조회")
 def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
     return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)
   
-  
-# 랜딩 페이지 CRUD
-@app.post("/landing/{subdomain}")
+
+@app.post("/landing/{subdomain}", summary="랜딩 페이지 Create")
 def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
     return landing_page_service.create_landing_page(subdomain, landing_page_request)
 
 
-@app.get("/landing/{subdomain}")
+@app.get("/landing/{subdomain}", summary="랜딩 페이지 Read")
 def get_landing_page(subdomain: str) -> List[LandingPageRequest]:
     return landing_page_service.get_landing_page(subdomain)
 
 
-@app.put("/landing/{subdomain}")
+@app.put("/landing/{subdomain}",  summary="랜딩 페이지 Update")
 def update_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
     return landing_page_service.update_landing_page(subdomain, landing_page_request)
 
