@@ -1,11 +1,20 @@
-from typing import TypeVar
 
-from fastapi import FastAPI, Header
+from typing import TypeVar
 from src.model.image_model import ImageProcessRequest
 from src.model.response_model import BaseResponse
 from src.service import chat_service, image_process_service, generate_service
+from fastapi import FastAPI, Header, Response
+from typing import List
+from src.model.assignment_model import AssignmentAnalysisRequest, GetAssignmentAnalysisRequest
+from src.model.problem_model import ProblemStatsModel, AssignmentReview
+from src.model.submission_model import SubmissionAnalysisRequest
+from src.model.landing_page_model import LandingPageRequest
+from src.model.response_model import BaseResponse
+from src.service import chat_service, submission_analysis_service, generate_service, landing_page_service, \
+    assignment_analysis_service, problem_service, image_service
 from src.model.chat_model import *
 from src.model.generate_model import *
+from src.service import problem_service
 
 T = TypeVar('T')
 
@@ -22,8 +31,54 @@ def generate_problem(generate_request: GenerateRequest, authorization: str = Hea
     return generate_service.generate_problem(generate_request, authorization)
 
 
-@app.post("/analysis")
+
+@app.post("/submission/analyze")
 def image_analysis(analysis_request: ImageProcessRequest, authorization: str = Header(None)) -> BaseResponse:
     return image_service.image_process(analysis_request, authorization)
 
 
+@app.post("/submit/analyze")
+def analyze_submission(a_s_request: SubmissionAnalysisRequest, authorization: str = Header(None)):
+    return submission_analysis_service.analyze_submission(a_s_request, authorization)
+
+
+@app.post("/assignment/analyze")
+def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
+    return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
+
+
+
+@app.get("/assignment/analysis")
+def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
+    return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)
+  
+  
+# 랜딩 페이지 CRUD
+@app.post("/landing/{subdomain}")
+def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
+    return landing_page_service.create_landing_page(subdomain, landing_page_request)
+
+
+@app.get("/landing/{subdomain}")
+def get_landing_page(subdomain: str) -> List[LandingPageRequest]:
+    return landing_page_service.get_landing_page(subdomain)
+
+
+@app.put("/landing/{subdomain}")
+def update_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
+    return landing_page_service.update_landing_page(subdomain, landing_page_request)
+
+
+@app.get("/problem/stats", summary="문제에 대한 통계를 조회하는 API")
+def get_problem_stats(subdomain: str, problem_id: str) -> ProblemStatsModel:
+    return problem_service.get_problem_stats(subdomain, problem_id)
+
+
+@app.get("/review", summary="학생의 과제 분석 결과를 조회하는 API")
+def get_student_assignment_review(student_id: str, assignment_id: str) -> List[AssignmentReview]:
+    return problem_service.get_student_assignment_review(student_id, assignment_id)
+
+
+@app.post("/image_generation", summary="이미지 생성 요청 API")
+def image_generation(image_request: ImageGenerationRequest) -> Response:
+    return image_service.generate_image(image_request)

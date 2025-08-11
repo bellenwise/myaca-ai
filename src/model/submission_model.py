@@ -1,8 +1,7 @@
 from pydantic import BaseModel
 
 
-class ImageProcessRequest(BaseModel):
+class SubmissionAnalysisRequest(BaseModel):
     acaId: str
     assignmentUuid: str
     problemId: str
-    imageURL: str
