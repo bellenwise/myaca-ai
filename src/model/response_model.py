@@ -4,11 +4,16 @@ from typing import Generic, TypeVar, Optional ,Any
 # 제네릭 타입을 정의하여 다양한 데이터 타입을 수용할 수 있게 합니다.
 T = TypeVar('T')
 
-class BaseResponse(BaseModel):
-    """모든 API 응답의 기본 구조"""
+class BaseResponse(BaseModel, Generic[T]):
+    """
+    Args:
+        status_code : 응답 코드
+        message : 응답 메시지
+        data: 반환 시에 담아 보낼 임의의 데이터
+    """
     status_code: int
     message: str
-    data: Optional[Any] = None
+    data: T = None
 
 
 class SuccessResponse(BaseResponse, Generic[T]):

@@ -2,7 +2,7 @@ from langchain.chains.llm import LLMChain
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
-
+from src.model.utils_model import TextResponse
 from src.model.outputParser import ModifyResult, ValidResult
 
 llm = ChatOpenAI(
@@ -10,7 +10,8 @@ llm = ChatOpenAI(
     temperature=0.5
 )
 
-def text_validation(text: str) -> (bool, str) :
+
+def text_validation(text: str) -> TextResponse :
     """
     LLM을 사용해 텍스트로 변환된 결과물에 대해, 사용 가능한지 검사합니다.
 
@@ -86,5 +87,5 @@ def text_validation(text: str) -> (bool, str) :
 
     validate_result = parser.parse(llm_response)
 
-    if validate_result.validity: return True, modify_result.text
-    else : return False, ""
+    if validate_result.validity: return TextResponse(True, modify_result.text)
+    else : return TextResponse(False, "")

@@ -6,3 +6,4 @@ class ImageProcessRequest(BaseModel):
     assignmentUuid: str
     problemId: str
     imageURL: str
+

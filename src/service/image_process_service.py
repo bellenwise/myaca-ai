@@ -41,7 +41,6 @@ def image_process(i_p_request: ImageProcessRequest, authorization: str):
     ddb = boto3.resource(
         'dynamodb',
         region_name='ap-northeast-2',
-        endpoint_url='http://localhost:8000'
     )
     llm = ChatOpenAI(model="gpt-4o", temperature=0.5)
 
@@ -49,7 +48,9 @@ def image_process(i_p_request: ImageProcessRequest, authorization: str):
     sub, ok, e = extract_claim_sub(authorization)
     if not ok:
         logger.error(e)
-        return UnauthorizedResponse
+        return UnauthorizedResponse(
+            message="failed to authorize cognito claims"
+        )
 
     # Get submission image from image URL
     if not validate_image_url(i_p_request.imageURL) :

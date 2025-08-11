@@ -1,8 +1,13 @@
+from typing import TypeVar
+
 from fastapi import FastAPI, Header
 from src.model.image_model import ImageProcessRequest
-from src.service import chat_service, image_service, generate_service
+from src.model.response_model import BaseResponse
+from src.service import chat_service, image_process_service, generate_service
 from src.model.chat_model import *
 from src.model.generate_model import *
+
+T = TypeVar('T')
 
 app = FastAPI()
 
@@ -13,10 +18,12 @@ def talk_chatbot(chat_request: ChatRequest, Authorization: Union[str, None] = He
 
 
 @app.post("/problem/generate")
-def generate_problem(generate_request: GenerateRequest, authorization: str = Header(None)):
+def generate_problem(generate_request: GenerateRequest, authorization: str = Header(None)) -> BaseResponse:
     return generate_service.generate_problem(generate_request, authorization)
 
 
 @app.post("/analysis")
-def submission_analysis(analysis_request: ImageProcessRequest, authorization: str = Header(None)):
-    return analysis_service.image_process(analysis_request, authorization)
+def image_analysis(analysis_request: ImageProcessRequest, authorization: str = Header(None)) -> BaseResponse:
+    return image_service.image_process(analysis_request, authorization)
+
+
