@@ -55,14 +55,14 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
     sub, ok, e = extract_claim_sub(authorization)
     if not ok:
         logger.error(e)
-        return UnauthorizedResponse
+        return UnauthorizedResponse()
 
     # Get Assignment Meta form ddb-assignment_submits
-    assignment_meta = ddb.Table("assignment_submits").get_item(
-        Key={
-            "PK": f"ASSIGNMENT#{a_a_request.assignmentId}",
-        },
-    )
+    # assignment_meta = ddb.Table("assignment_submits").get_item(
+    #     Key={
+    #         "PK": f"ASSIGNMENT#{a_a_request.assignmentId}",
+    #     },
+    # )
 
     #  Get all Assignments from ddb-academies
     assignment_submissions = ddb.Table("academies").query(
@@ -75,25 +75,25 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
     assignment_analysis_template = """
     당신은 수학 교사 중, 상급자입니다.
     역할은 학생들의 통계치와 과제 내용을 바탕으로 과제 수준이나 반의 성취도를 분석하는 것입니다.
+    과제의 총점은 과제 내의 문제 개수와 같습니다.
     
     제출물: {assignment_submissions}
-    과제 메타 데이터: {assignment_meta}
     
     제출물과 과제 메타 데이터를 바탕으로 다음 지침에 따라 과제를 분석해 주세요.
-    1. 과제의 평균 점수를 통해 학생들의 과제에 대한 성취 수준을 평가해 주세요.
+    1. 과제들의 평균 점수를 내고, 그 평균을 통해 학생들의 과제에 대한 성취 수준을 평가해 주세요.
     2. 과제 내 문제들의 틀린 수와 틀린 이유를 통산해 틀린 이유 별로 카운트 해주세요.
     3. 과제의 틀린 이유 통산 값을 바탕으로 다음에 과제를 낼 때 주의하거나 개선해야 할 사항을 분석해 주세요.
     4. 과제의 성취 수준 분석 결과와 과제 분석 사항을 순서대로 요약해 주세요.
-    5. 요약된 분석과 과제의 문제들의 틀린 총 개수, 과제에서 틀린 이유의 통산 맵,과제 평균 점수를 차레로 전달해 주세요.
+    5. 요약된 분석과 과제의 문제들의 틀린 총 개수, 과제에서 틀린 이유의 통산 맵,과제 평균 점수, 총점을 차레로 전달해 주세요.
     
     {format_instructions}
     """
 
     assignment_analysis_prompt = PromptTemplate(
         template=assignment_analysis_template,
-        input_variables=["assignment_submissions", "assignment_meta"],
+        input_variables=["assignment_submissions"],
         partial_variables={
-            "format_instructions": parser.format_instructions()
+            "format_instructions": parser.get_format_instructions()
         }
     )
 
@@ -104,15 +104,11 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
 
     llm_response = chain.run(
         assignment_submissions=assignment_submissions,
-        assignment_meta=assignment_meta,
     )
 
     assignment_analysis_result = parser.parse(llm_response)
 
     # update item ddb-academies
-    submission_total_count = len(assignment_submissions.get("Items", {}).get("Problems", 0))
-
-
     ddb.Table("assignment_submits").put_item(
         Item={
             "PK": f"ASSIGNMENT#{a_a_request.assignmentId}",
@@ -120,7 +116,7 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
             "IncorrectCount": assignment_analysis_result.incorrect_count,
             "IncorrectReason": assignment_analysis_result.incorrect_reasons,  # 변수명 확인 필요
             "Analysis": assignment_analysis_result.analysis,
-            "Avg": f"{assignment_analysis_result.avg}/{submission_total_count}",  # '{}' 부분 값 넣어야 함
+            "Avg": f"{assignment_analysis_result.score_avg}/{assignment_analysis_result.total_count}",
         },
     )
 
@@ -128,7 +124,7 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
             data={
                 "acaId": a_a_request.acaId,
                 "assignmentId": a_a_request.assignmentId,
-                "score_avg": assignment_analysis_result.avg,
+                "score_avg": assignment_analysis_result.score_avg,
                 "analysis": assignment_analysis_result.analysis,
                 "IncorrectReasons": assignment_analysis_result.incorrect_reasons,
             }
