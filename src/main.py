@@ -1,17 +1,15 @@
 
 from typing import TypeVar
-from src.model.image_model import ImageProcessRequest
-from src.model.response_model import BaseResponse
-from src.service import chat_service, image_process_service, generate_service
+from src.model.image_model import ImageProcessRequest, ImageGenerationRequest
+from src.service import image_process_service
 from fastapi import FastAPI, Header, Response
 from typing import List
-from src.model.assignment_model import AssignmentAnalysisRequest, GetAssignmentAnalysisRequest
+from src.model.assignment_model import AssignmentAnalysisRequest
 from src.model.problem_model import ProblemStatsModel, AssignmentReview
 from src.model.submission_model import SubmissionAnalysisRequest
 from src.model.landing_page_model import LandingPageRequest
 from src.model.response_model import BaseResponse
-from src.service import chat_service, submission_analysis_service, generate_service, landing_page_service, \
-    assignment_analysis_service, problem_service, image_service
+from src.service import chat_service, submission_analysis_service, generate_service, landing_page_service, assignment_analysis_service, image_service
 from src.model.chat_model import *
 from src.model.generate_model import *
 from src.service import problem_service
@@ -21,33 +19,37 @@ T = TypeVar('T')
 app = FastAPI()
 
 
+# 학생 LLM 채팅
 @app.post("/chat")
 def talk_chatbot(chat_request: ChatRequest, Authorization: Union[str, None] = Header(default=None)) -> ChatResponse:
     return chat_service.response_chat(chat_request, Authorization)
 
 
+# 관리자 비슷한 문제 생성
 @app.post("/problem/generate")
 def generate_problem(generate_request: GenerateRequest, authorization: str = Header(None)) -> BaseResponse:
     return generate_service.generate_problem(generate_request, authorization)
 
 
-
+# 학생 제출 이미지 텍스트 분석 및 저장
 @app.post("/submission/analyze")
 def image_analysis(analysis_request: ImageProcessRequest, authorization: str = Header(None)) -> BaseResponse:
-    return image_service.image_process(analysis_request, authorization)
+    return image_process_service.image_process(analysis_request, authorization)
 
 
-@app.post("/submit/analyze")
+# 학생 제출물과 솔루션 비교 분석
+@app.post("/submission/analyze")
 def analyze_submission(a_s_request: SubmissionAnalysisRequest, authorization: str = Header(None)):
     return submission_analysis_service.analyze_submission(a_s_request, authorization)
 
 
+# 과제 마감 후 제출물 분석
 @app.post("/assignment/analyze")
 def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
     return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
 
 
-
+# 과제 분석 내용 조회
 @app.get("/assignment/analysis")
 def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
     return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)

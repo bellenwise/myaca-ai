@@ -1,9 +1,7 @@
 from typing import List
-
 import boto3
 from boto3.dynamodb.conditions import Key
 from fastapi import HTTPException
-
 from src.model.problem_model import ProblemStatsModel, AssignmentReview
 
 ddb = boto3.resource("dynamodb", region_name="ap-northeast-2")

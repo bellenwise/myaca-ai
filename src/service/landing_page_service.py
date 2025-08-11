@@ -2,7 +2,6 @@ from typing import List
 from fastapi import HTTPException
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
-
 from src.model.landing_page_model import LandingPageRequest
 
 ddb = boto3.resource(

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Generic, TypeVar, Optional ,Any
+from typing import Generic, TypeVar
 
 # 제네릭 타입을 정의하여 다양한 데이터 타입을 수용할 수 있게 합니다.
 T = TypeVar('T')
