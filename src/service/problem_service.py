@@ -1,7 +1,10 @@
+from typing import List
+
 import boto3
+from boto3.dynamodb.conditions import Key
 from fastapi import HTTPException
 
-from src.model.problem_model import ProblemStatsModel
+from src.model.problem_model import ProblemStatsModel, AssignmentReview
 
 ddb = boto3.resource("dynamodb", region_name="ap-northeast-2")
 
@@ -35,3 +38,25 @@ def get_problem_stats(subdomain: str, problem_id: str) -> ProblemStatsModel:
         correctRate=correct_rate,
         incorrectReason=incorrect_reason
     )
+
+
+def get_student_assignment_review(student_id: str, assignment_id: str) -> List[AssignmentReview]:
+    table = ddb.Table("assignment_submits")
+    response = table.query(
+        KeyConditionExpression=Key('PK').eq(f"ASSIGNMENT#{assignment_id}") & Key('SK').begins_with(student_id)
+    )
+
+    if 'Items' not in response or not response['Items']:
+        raise HTTPException(status_code=404, detail="No submissions found for the student")
+
+    # Map the DynamoDB items to AssignmentReview objects
+    return_items = [
+        AssignmentReview(
+            questionId=item.get('SK').split('#')[-1],
+            incorrectReason=item.get('IncorrectReason', None),
+            analysis=item.get('Analysis', None)
+        )
+        for item in response['Items']
+    ]
+
+    return return_items
