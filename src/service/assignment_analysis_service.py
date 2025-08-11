@@ -21,6 +21,7 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
     Args:
         a_a_request: 과제 분석 요청
             - acaId
+            - courseId
             - assignmentId
 
         authorization: 헤더
@@ -129,3 +130,48 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
                 "IncorrectReasons": assignment_analysis_result.incorrect_reasons,
             }
         )
+
+
+def get_assignment_analysis(g_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
+    """
+    과제 메타데이터와 개별 문항 내용을 조회하는 함수
+    Args:
+        g_a_request:
+            courseId: 과제 조회를 위한
+            assignmentId: 과제 조회를 위한
+        authorization: Header
+
+    Returns:
+
+    """
+
+    # init
+    ddb = boto3.resource("dynamodb")
+
+    # Get Assignment Meta from ddb-assignment_submits
+    assignment_meta = ddb.Table("assignment_submits").get_item(
+        Key={
+            "PK": f"ASSIGNMENT#{g_a_request.assignmentId}",
+            "SK": "INFO",
+        }
+    )
+    assignment_meta = assignment_meta.get("Item", {})
+
+    # Get problem list from ddb-academies
+    problems = ddb.Table("academies").get_item(
+        Key={
+            "PK": f"COURSE#{g_a_request.courseId}",
+            "SK": f"ASSIGNMENT#{g_a_request.assignmentId}",
+        }
+    )
+    problem_list = problems.get("Items", {}).get("Problems", [])
+
+    # Formatting
+    response_data = {
+        "score_avg" : assignment_meta.get("Avg", "0/0"),
+        "analysis" : assignment_meta.get("Analysis", ""),
+        "IncorrectReasons" : assignment_meta.get("IncorrectReasons", {})
+    }
+
+    # return
+    return SuccessResponse(data= response_data)
