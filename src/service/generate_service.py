@@ -3,6 +3,7 @@ import logging
 import dotenv
 import uuid
 from langchain.chains.llm import LLMChain
+from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from src.model.outputParser import *
