@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Header, Response
-from src.model.assignment_model import AssignmentAnalysisRequest
 from src.model.image_model import ImageGenerationRequest
+from typing import List
+from src.model.assignment_model import AssignmentAnalysisRequest, GetAssignmentAnalysisRequest
 from src.model.problem_model import ProblemStatsModel, AssignmentReview
 from src.model.submission_model import SubmissionAnalysisRequest
 from src.model.landing_page_model import LandingPageRequest
@@ -9,7 +10,7 @@ from src.service import chat_service, submission_analysis_service, generate_serv
     assignment_analysis_service, problem_service, image_service
 from src.model.chat_model import *
 from src.model.generate_model import *
-from typing import List
+from src.service import problem_service
 
 app = FastAPI()
 
@@ -34,6 +35,12 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
     return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
 
 
+
+@app.get("/assignment/analysis")
+def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
+    return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)
+  
+  
 # 랜딩 페이지 CRUD
 @app.post("/landing/{subdomain}")
 def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):

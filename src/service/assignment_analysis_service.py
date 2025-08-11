@@ -7,7 +7,7 @@ from boto3.dynamodb.conditions import Key
 from langchain.chains.llm import LLMChain
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-from src.model.assignment_model import AssignmentAnalysisRequest
+from src.model.assignment_model import AssignmentAnalysisRequest, GetAssignmentAnalysisRequest
 from src.model.outputParser import AssignmentAnalysisResult
 from src.model.response_model import BaseResponse, SuccessResponse, UnauthorizedResponse
 from src.utils.extract_claim_sub import extract_claim_sub
@@ -21,6 +21,7 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
     Args:
         a_a_request: 과제 분석 요청
             - acaId
+            - courseId
             - assignmentId
 
         authorization: 헤더
@@ -129,3 +130,41 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
                 "IncorrectReasons": assignment_analysis_result.incorrect_reasons,
             }
         )
+
+
+def get_assignment_analysis(acaId, assignmentId, authorization: str = Header(None)) -> BaseResponse:
+    """
+    과제 메타데이터와 개별 문항 내용을 조회하는 함수
+    Args:
+        g_a_request:
+            acaId: 과제 조회를 위한
+            assignmentId: 과제 조회를 위한
+        authorization: Header
+
+    Returns:
+
+    """
+
+    # init
+    ddb = boto3.resource(
+        service_name="dynamodb",
+        region_name="ap-northeast-2")
+
+    # Get Assignment Meta from ddb-assignment_submits
+    assignment_meta = ddb.Table("assignment_submits").get_item(
+        Key={
+            "PK": f"ASSIGNMENT#{assignmentId}",
+            "SK": "INFO",
+        }
+    )
+    assignment_meta = assignment_meta.get("Item", {})
+
+    # Formatting
+    response_data = {
+        "score_avg" : assignment_meta.get("Avg", "0/0"),
+        "analysis" : assignment_meta.get("Analysis", ""),
+        "IncorrectReasons" : assignment_meta.get("IncorrectReasons", {})
+    }
+
+    # return
+    return SuccessResponse(data= response_data)
