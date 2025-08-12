@@ -86,8 +86,7 @@ def response_chat(chat_request: ChatRequest, authorization: str) -> ChatResponse
         2. 답변의 설명이 너무 길거나 짧지 않은지 검토해 주세요.
         3. 답변 내용이 적절하다면 그대로 출력해 주세요.
         
-        {format_instructions}
-        [개선된 최종 답변]         
+        개선된 최종 답변을 출력해 주세요.        
     """
 
     format_template = """
@@ -98,7 +97,7 @@ def response_chat(chat_request: ChatRequest, authorization: str) -> ChatResponse
         
         원본 텍스트: {verified_response}
         
-        [마크 다운 형식의 최종 결과]
+        마크 다운 형식의 최종 결과만을 출력해 주세요.
     """
 
     parser = PydanticOutputParser(pydantic_object=ChatResult)
@@ -111,7 +110,6 @@ def response_chat(chat_request: ChatRequest, authorization: str) -> ChatResponse
     verification_prompt = PromptTemplate.from_template(
         template=verify_template,
         input_variables=["question", "ai_response"],
-        partial_variables={"format_instructions": parser.get_format_instructions()}
     )
     format_prompt = PromptTemplate.from_template(
         template=format_template,
