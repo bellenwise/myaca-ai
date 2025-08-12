@@ -96,11 +96,11 @@ def response_chat(chat_request: ChatRequest, authorization: str) -> ChatResponse
     - 중요한 개념이나 키워드는 **볼드체**로 강조해 주세요.
     - 목록이 필요하다면 순서 없는 리스트(-)를 사용해 주세요.
     - 전체적으로 친절하고 이해하기 쉬운 톤을 유지해 주세요.
+    - 최종 출력 결과를 한문장 단위로 개행해서 만들어 주세요.
     
     원본 텍스트: {verified_response}
     
     {format_instructions}
-    [마크다운 형식의 최종 결과]
     """
 
     parser = PydanticOutputParser(pydantic_object=ChatResult)
