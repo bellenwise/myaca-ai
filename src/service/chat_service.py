@@ -1,7 +1,6 @@
 import boto3
 import logging
 import dotenv
-from langchain.chains.llm import LLMChain
 from langchain_core.output_parsers import PydanticOutputParser, StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
@@ -92,14 +91,14 @@ def response_chat(chat_request: ChatRequest, authorization: str) -> ChatResponse
     """
 
     format_template = """
-    당신은 콘텐츠 편집 전문가입니다. 다음 텍스트를 학생들이 읽기 쉽도록 명확하고 간결한 마크다운 형식으로 변환해주세요.
-    - 중요한 개념이나 키워드는 **볼드체**로 강조해 주세요.
-    - 목록이 필요하다면 순서 없는 리스트(-)를 사용해 주세요.
-    - 전체적으로 친절하고 이해하기 쉬운 톤을 유지해 주세요.
-    
-    원본 텍스트: {verified_response}
-    
-    [마크 다운 형식의 최종 결과]
+        당신은 콘텐츠 편집 전문가입니다. 다음 텍스트를 학생들이 읽기 쉽도록 명확하고 간결한 마크다운 형식으로 변환해주세요.
+        - 중요한 개념이나 키워드는 **볼드체**로 강조해 주세요.
+        - 목록이 필요하다면 순서 없는 리스트(-)를 사용해 주세요.
+        - 전체적으로 친절하고 이해하기 쉬운 톤을 유지해 주세요.
+        
+        원본 텍스트: {verified_response}
+        
+        [마크 다운 형식의 최종 결과]
     """
 
     parser = PydanticOutputParser(pydantic_object=ChatResult)
@@ -111,6 +110,8 @@ def response_chat(chat_request: ChatRequest, authorization: str) -> ChatResponse
     )
     verification_prompt = PromptTemplate.from_template(
         template=verify_template,
+        input_variables=["question", "ai_response"],
+        partial_variables={"format_instructions": parser.get_format_instructions()}
     )
     format_prompt = PromptTemplate.from_template(
         template=format_template,
@@ -129,9 +130,8 @@ def response_chat(chat_request: ChatRequest, authorization: str) -> ChatResponse
             verified_chat = (
                 RunnableLambda(
                     lambda x: {
-                        "problem": x["problem"],
-                        "explanation": x["explanation"],
-                        "generated_chat": x["generated_result"].chat,
+                        "question": x["question"],
+                        "ai_response": x["chat_result"],
                     }
                 )
                 | verification_chain
@@ -140,7 +140,7 @@ def response_chat(chat_request: ChatRequest, authorization: str) -> ChatResponse
             # 3. formatting_chain을 실행
             #    - 이전 단계에서 검증된 결과(verified_chat)를 포매팅 체인의 입력으로 전달
             formatted_message= (
-                RunnableLambda(lambda x: {"verified_chat": x["verified_chat"]})
+                RunnableLambda(lambda x: {"verified_response": x["verified_chat"]})
                 | formatting_chain
             )
         )
