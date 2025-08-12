@@ -176,7 +176,7 @@ def image_process(i_p_request: ImageProcessRequest):
                 "PK": i_p_request.acaId,
                 "SK": f"PROBLEM#{i_p_request.problemId}"
             },
-            UpdateExpression="SET IncorrectCount = :inc, Reason = :r ",
+            UpdateExpression="SET IncorrectCount = :inc, Reasons = :r ",
             ExpressionAttributeValues={
                 ":inc": inc,
                 ":r": problem_reasons
