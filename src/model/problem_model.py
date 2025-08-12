@@ -8,10 +8,10 @@ class ProblemStatsModel(BaseModel):
 
     Args :
         - correctRate: str
-        - incorrectReason: dict
+        - reason: dict
     """
     correctRate: Union[int, None]
-    incorrectReason: dict
+    reason: dict
 
 
 class AssignmentReview(BaseModel):
@@ -20,9 +20,9 @@ class AssignmentReview(BaseModel):
 
     Args :
         - questionId: str
-        - incorrectReason: Union[str, None]
+        - reason: Union[str, None]
         - analysis: Union[str, None]
     """
     questionId: str
-    incorrectReason: Union[str, None]
+    reason: Union[str, None]
     analysis: Union[str, None]

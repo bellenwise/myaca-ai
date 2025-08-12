@@ -8,6 +8,7 @@ categories = {
     "선택지 오해": "Misunderstanding of Answer Choices | 객관식 문제에서 선택지의 의미를 잘못 해석하거나, 문제의 답과 무관한 선택지를 고름",
     "추론 실패": "Inference Failure | 개별 개념은 이해하고 있지만, 복합적인 문제 상황을 종합적으로 분석하지 못함",
     "오타": "Typo | 텍스트 입력에 글자나 문자가 잘못 입력한 것으로 판단됨",
+    "정답": "답과 학생이 제출한 답안이 일치함"
 }
 
 forbidden_keywords = [

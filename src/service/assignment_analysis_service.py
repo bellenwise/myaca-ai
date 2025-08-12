@@ -36,7 +36,7 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
                 "assignmentId": str,            # 과제 ID
                 "score_avg": float 또는 str,     # 과제 평균 점수 (LLM 분석 결과)
                 "analysis": str,                # 과제 성취도 및 개선점 분석 요약
-                "IncorrectReasons": dict       # 틀린 이유별 통산 카운트 맵, 예: {"개념 부족": 3, "오타": 1}
+                "reasons": dict       # 이유별 통산 카운트 맵, 예: {"개념 부족": 3, "오타": 1}
             }
         Otherwise, return InternalConflictResponse
 
@@ -71,10 +71,10 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
         KeyConditionExpression = Key('PK').eq(f"ASSIGNMENT#{a_a_request.assignmentId}")
     ).get('Item', [])
 
-    incorrect_reasons = Dict[str, int]
+    reasons = Dict[str, int]
 
     for assignment in assignment_submissions :
-        incorrect_reasons[assignment.get("IncorectReason")] += 1
+        reasons[assignment.get("Reason")] += 1
 
     # Request to LLM to analyze Assignment
     parser = PydanticOutputParser(pydantic_object=AssignmentAnalysisResult)
@@ -88,10 +88,10 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
     
     제출물과 과제 메타 데이터를 바탕으로 다음 지침에 따라 과제를 분석해 주세요.
     1. 과제들의 평균 점수를 내고, 그 평균을 통해 학생들의 과제에 대한 성취 수준을 평가해 주세요.
-    2. 과제 내 문제들의 틀린 수와 틀린 이유를 통산해 틀린 이유 별로 카운트 해주세요.
-    3. 과제의 틀린 이유 통산 값을 바탕으로 다음에 과제를 낼 때 주의하거나 개선해야 할 사항을 분석해 주세요.
+    2. 과제 내 문제들의 틀린 수와 이유를 통산해 이유 별로 카운트 해주세요.
+    3. 과제의 이유 통산 값을 바탕으로 다음에 과제를 낼 때 주의하거나 개선해야 할 사항을 분석해 주세요.
     4. 과제의 성취 수준 분석 결과와 과제 분석 사항을 순서대로 요약해 주세요.
-    5. 요약된 분석과 과제의 문제들의 틀린 총 개수, 과제에서 틀린 이유의 통산 맵,과제 평균 점수, 총점을 차레로 전달해 주세요.
+    5. 요약된 분석과 과제의 문제들의 틀린 총 개수, 과제에서 이유의 통산 맵, 과제 평균 점수, 총점을 차레로 전달해 주세요.
     
     {format_instructions}
     """
@@ -120,7 +120,7 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
         Item={
             "PK": f"ASSIGNMENT#{a_a_request.assignmentId}",
             "SK": "INFO",
-            "IncorrectReasons": incorrect_reasons,
+            "Reasons": reasons,
             "Analysis": assignment_analysis_result.analysis,
         },
     )
@@ -130,7 +130,7 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
                 "acaId": a_a_request.acaId,
                 "assignmentId": a_a_request.assignmentId,
                 "analysis": assignment_analysis_result.analysis,
-                "IncorrectReasons": incorrect_reasons,
+                "Reasons": reasons,
             }
         )
 

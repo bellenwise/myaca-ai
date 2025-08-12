@@ -11,25 +11,21 @@ def get_assignment_analysis(course_id: str, assignment_id: str) -> BaseResponse:
 
     from boto3.dynamodb.conditions import Key
     assignments = ddb.Table("assignment_submits").query(
-        KeyConditionExpression=Key("PK").eq(f"ASSGINMENT#{assignment_id}")
+        KeyConditionExpression=Key("PK").eq(f"ASSIGNMENT#{assignment_id}")
     ).get('Items', [])
-
-    assignment_info = ddb.Table("academies").get_item(
-        Key={
-            "PK": course_id,
-            "SK": f"ASSIGNMENT#{assignment_id}"
-        }
-    ).get('Item', {})
 
     assignment_submits = ddb.Table("academies").query(
         KeyConditionExpression=Key("PK").eq(f"ASSIGNMENT#{assignment_id}")
     ).get("Items", [])
 
+    print(assignments)
+
     counts = defaultdict(int)
     total_score = 0
     score_sum = 0
     ass_num = 0
-    count = 0
+    res_count = 0
+    reasons = defaultdict(int)
 
     for submit in assignment_submits:
         ass_num += 1
@@ -39,19 +35,19 @@ def get_assignment_analysis(course_id: str, assignment_id: str) -> BaseResponse:
         for key, value in count.items() :
             if key : counts[key] += 1
 
-    incorrectReasons :Dict[str, int] = defaultdict(int)
-
     for assignment in assignments:
-        incorrectReason = assignment.get("IncorrectReason", "")
-        if incorrectReason != "" :
-            incorrectReasons[incorrectReason] += 1
-            count += 1
+        reason = assignment.get("Reason")
+        print(reason)
+        if reason :
+            print(reason)
+            reasons[reason] += 1
+            res_count += 1
 
-    if count == 0 :
+    if res_count == 0 :
         return InternalServerErrorResponse(
             message="no Analysis",
             data={
-                "problemCounts": counts,
+                "problemCounts": dict(counts),
                 "score": total_score,
                 "avg": int(score_sum)/ass_num
             }
@@ -59,7 +55,7 @@ def get_assignment_analysis(course_id: str, assignment_id: str) -> BaseResponse:
     else :
         return SuccessResponse(
             data={
-                "incorrectReasons": incorrectReasons,
+                "reasons": dict(reasons),
                 "problemCounts": counts,
                 "score": total_score,
                 "avgSum": int(score_sum)/ass_num

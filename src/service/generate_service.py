@@ -47,13 +47,13 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
     new_problem_id = uuid.uuid4().hex
     generate_prompt = """
         당신은 수학 교사입니다.
-        다음은 문제, 문제를 틀린 학생들의 틀린 이유와 그 수입니다.
+        다음은 문제, 문제를 틀린 학생들의 이유와 그 수입니다.
         문제: {problem}
-        틀린 이유와 그 수: {IncorrectReasons}
+        이유와 그 수: {reasons}
 
-        문제, 정답률, 틀린 이유를 바탕으로 다음과 같은 지침에 따라 문제와 비슷한 문제를 생성해 주세요.
-        1. 총 제출자와 틀린 이유의 수를 기반으로 정답률을 고려해 문제의 복잡도를 전체 학생 수준의 중간으로 조정해 주세요.
-        2. 틀린 이유와 그 수를 고려하여 가장 많이 틀린 이유를 훈련할 수 있도록 새 문제의 문항을 생성해 주세요.
+        문제, 정답률, 이유를 바탕으로 다음과 같은 지침에 따라 문제와 비슷한 문제를 생성해 주세요.
+        1. 총 제출자와 이유의 수를 기반으로 정답률을 고려해 문제의 복잡도를 전체 학생 수준의 중간으로 조정해 주세요.
+        2. 이유와 그 수를 고려하여 가장 많이 이유를 훈련할 수 있도록 새 문제의 문항을 생성해 주세요.
         3. 새 문제에 맞는 풀이 과정을 솔루션으로 만들고, 아래의 3가지 중 임의의 하나를 선택해 답변 형식을 지정해 주세요.
         3-1. 만약 select형일 경우, 다섯 가지의 선택지 중 한 개의 선택지만 답으로 처리헤 주세요.
         3-2. 만약 multi형일 경우, 네 가지 선택지 중 두개의 선택지를 답으로 처리해 주세요.
@@ -70,7 +70,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
     """
     prompt = PromptTemplate(
         template=generate_prompt,
-        input_variables=["problem", "IncorrectReasons"],
+        input_variables=["problem", "Reasons"],
         partial_variables={
             "format_instructions": parser.get_format_instructions()
         }
@@ -79,7 +79,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
     chain = LLMChain(llm=llm, prompt=prompt)
     llm_response = chain.run(
         problem=problem,
-        IncorrectReasons=problem.get('IncorrectReasons'),
+        Reasons=problem.get('Reasons'),
     )
 
     generate_result = parser.parse(llm_response)
@@ -134,8 +134,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
             "type": generate_result.type,
             "imageURL": generate_result.imageURL,
             "totalSolved": 0,
-            "incorrectCount": 0,
-            "incorrectReasons": {
+            "Reasons": {
                 "개념 부족" : 0,
                 "적용 오류" : 0,
                 "문제 해석 오류" : 0,
@@ -145,6 +144,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
                 "선택지 오해" : 0,
                 "추론 실패" : 0,
                 "오타" : 0,
+                "정답": 0,
             },
             "solution": generate_result.solution,
         }

@@ -114,13 +114,13 @@ def image_process(i_p_request: ImageProcessRequest):
 
     categorized_prompt = """
         당신은 수학 교사입니다.
-        다음은 학생의 문제 풀이 분석 결과와 틀린 이유 리스트 입니다.
+        다음은 학생의 문제 풀이 분석 결과와 이유 리스트 입니다.
         문제 풀이 분석: {analysis_result}
-        틀린 이유: {categories}
+        이유: {categories}
 
-        문제 풀이 분석을 바탕으로 아래 지침에 따라 틀린 이유를 분류해 주세요.
-        문제 풀이 내용이 없다면 틀린 이유를 기타로 주세요.
-        - 틀린 이유들 중, 분석 결과에 가장 근접한 틀린 한글 이유를 선택합니다.
+        문제 풀이 분석을 바탕으로 아래 지침에 따라 이유를 분류해 주세요.
+        맞았다면 정답으로 주세요.
+        - 이유들 중, 분석 결과에 가장 근접한 한글 이유를 선택합니다.
             "개념 부족"
             "적용 오류"
             "문제 해석 오류" 
@@ -130,8 +130,9 @@ def image_process(i_p_request: ImageProcessRequest):
             "선택지 오해"
             "추론 실패"
             "오타"
-            
-        {format_instructions}
+            "정답"
+                    
+            {format_instructions}
     """
     prompt = PromptTemplate(
         template=categorized_prompt,
@@ -155,7 +156,7 @@ def image_process(i_p_request: ImageProcessRequest):
     try :
         ddb.Table("assignment_submits").update_item(
             Key={"PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}", "SK": f"{sub}#{i_p_request.problemId}"},
-            UpdateExpression="SET Analysis = :a, IncorrectReason = :ir, Explanation = :ex",
+            UpdateExpression="SET Analysis = :a, Reason = :ir, Explanation = :ex",
             ExpressionAttributeValues={
                 ":a": analysis_result.analysis,
                 ":ir": categorize_result.reason,

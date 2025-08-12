@@ -14,7 +14,7 @@ class AnalysisResult(BaseModel):
 
 class ReasonResult(BaseModel):
     """
-    범주화된 틀린 이유
+    범주화된 풀이 이유
 
     Args : reason
         - "개념 부족"
@@ -26,7 +26,7 @@ class ReasonResult(BaseModel):
         - "선택지 오해"
         - "추론 실패"
         - "오타"
-        - "기타"
+        - "정답"
     """
     reason : str = Field(description="Reason Categorize Result")
 
