@@ -11,6 +11,7 @@ from src.service import chat_service, generate_service, landing_page_service, as
 from src.model.chat_model import *
 from src.model.generate_model import *
 from src.service import problem_service
+from src.utils.get_assignment_analysis import get_assignment_analysis as gaa
 
 T = TypeVar('T')
 
@@ -38,8 +39,10 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
 
 
 @app.get("/assignment/analysis", summary="과제 분석 내용 조회")
-def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
-    return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)
+# def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
+#     return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)
+def get_assignment_analysis(assignmentId : str) -> BaseResponse:
+    return gaa(assignmentId)
   
 
 @app.post("/landing/{subdomain}", summary="랜딩 페이지 Create")
