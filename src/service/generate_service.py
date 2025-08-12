@@ -9,7 +9,6 @@ from langchain_openai import ChatOpenAI
 from src.model.outputParser import *
 from src.model.generate_model import GenerateRequest
 from src.model.response_model import *
-from src.utils.extract_claim_sub import extract_claim_sub
 
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
@@ -54,10 +53,18 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
 
         문제, 정답률, 틀린 이유를 바탕으로 다음과 같은 지침에 따라 문제와 비슷한 문제를 생성해 주세요.
         1. 총 제출자와 틀린 이유의 수를 기반으로 정답률을 고려해 문제의 복잡도를 전체 학생 수준의 중간으로 조정해 주세요.
-        2. 틀린 이유와 그 수를 고려하여 가장 많이 틀린 이유를 훈련할 수 있도록 동일한 분야의 새 문제를 생성해 주세요.
-        3. 새롭게 생성한 문제가 오류 혹은 잘못된 구조로 이루어졌는지 점검해 주세요.
-        4. 정상적으로 점검된 문제를 정리하여 기존 문제와 같은 형식으로 만들어 주세요.
-        5. 생성된 모든 내용을 한글로 번역해 주세요.
+        2. 틀린 이유와 그 수를 고려하여 가장 많이 틀린 이유를 훈련할 수 있도록 새 문제의 문항을 생성해 주세요.
+        3. 새 문제에 맞는 풀이 과정을 솔루션으로 만들고, 아래의 3가지 중 임의의 하나를 선택해 답변 형식을 지정해 주세요.
+        3-1. 만약 select형일 경우, 다섯 가지의 선택지 중 한 개의 선택지만 답으로 처리헤 주세요.
+        3-2. 만약 multi형일 경우, 네 가지 선택지 중 두개의 선택지를 답으로 처리해 주세요.
+        3-3. 만약 subjective형일 경우, 숫자로 된 문자열을 답으로 처리해 주세요. (예, 250, 32 등)
+        4. 답변 형식에 따라 select, multi는 list로, subjective는 string입니다.
+        5. 답 선택지 외의 선택지는 정답으로부터 숫자를 조금 바꿔서 생성해 주세요.
+        6. 선택지들의 인덱스를 무작위로 섞어 주세요.
+        7. 답변이 리스트인 경우에는, 답변에 섞인 선택지의 인덱스를 저장하도록 만들어 주세요.
+        8. 문제를 완전히 만든 후, 생성된 문제와 그 답이 정상적으로 풀 수 있는지 검사해 주세요.
+        9. 정상적으로 점검된 문제를 정리하여 기존 문제와 같은 형식으로 만들어 주세요.
+        10. 생성된 모든 내용을 한글로 번역해 주세요.
 
         {format_instructions}    
     """

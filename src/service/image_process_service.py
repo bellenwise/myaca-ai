@@ -90,6 +90,7 @@ def image_process(i_p_request: ImageProcessRequest):
         학생 풀이: {explanation}
         솔루션: {solution}
 
+        만약 문제 풀이 내용이 없다면 분석을 종료하고 빈 문자열로 주세요.
         위 두 풀이를 비교하여 다음 지침에 따라 분석해 주세요.
         1. 학생 풀이의 과정에 대해서 상세하게 설명해 주세요.
         2. 솔루션과 학생 풀이를 비교하여 틀리거나 다른 이유를 간결하게 요약해 주세요.
@@ -122,9 +123,18 @@ def image_process(i_p_request: ImageProcessRequest):
         틀린 이유: {categories}
 
         문제 풀이 분석을 바탕으로 아래 지침에 따라 틀린 이유를 분류해 주세요.
+        문제 풀이 내용이 없다면 틀린 이유를 기타로 주세요.
         - 틀린 이유들 중, 분석 결과에 가장 근접한 틀린 한글 이유를 선택합니다.
-        - 예시, 추론 실패
-
+            "개념 부족"
+            "적용 오류"
+            "문제 해석 오류" 
+            "정보 누락/오독"
+            "계산 실수"
+            "논리적 오류"
+            "선택지 오해"
+            "추론 실패"
+            "오타" 
+            
         {format_instructions}
         """
     prompt = PromptTemplate(
