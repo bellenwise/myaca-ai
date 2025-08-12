@@ -84,8 +84,8 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
 @app.get("/assignment/analysis", summary="과제 분석 내용 조회")
 # def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
 #     return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)
-def get_assignment_analysis(assignmentId : str) -> BaseResponse:
-    return gaa(assignmentId)
+def get_assignment_analysis(courseId: str, assignmentId : str) -> BaseResponse:
+    return gaa(courseId, assignmentId)
   
 
 @app.post("/landing/{subdomain}", summary="랜딩 페이지 Create")
