@@ -14,12 +14,14 @@ from src.utils.extract_claim_sub import extract_claim_sub
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
 
-def  generate_problem(generate_request: GenerateRequest, authorization: str):
+def  generate_problem(generate_request: GenerateRequest, authorization: str) -> BaseResponse:
     """
-        AWS DynamoDB에서 학생의 과제 제출 결과를 조회하여 반환합니다.
+        비슷한 문제 생성
 
         Args:
-            analysisRequest: 과제 제출 정보가 담긴 AnalysisRequest 객체
+            generate_request :
+                - aca_id
+                - problemID
 
         Returns:
             조회된 과제 제출 결과 데이터
@@ -34,7 +36,7 @@ def  generate_problem(generate_request: GenerateRequest, authorization: str):
     sub, ok, e = extract_claim_sub(authorization)
     if not ok:
         logger.error(e)
-        return UnauthorizedResponse
+        return UnauthorizedResponse()
 
     # Get Problem with acaID & problemID from ddb-problems
     problem = ddb.Table("problems").get_item(
