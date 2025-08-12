@@ -2,7 +2,7 @@ from typing import List
 from fastapi import HTTPException
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
-from src.model.landing_page_model import LandingPageRequest
+from src.model.landing_page_model import LandingPageModel
 
 ddb = boto3.resource(
     'dynamodb',
@@ -10,7 +10,7 @@ ddb = boto3.resource(
 )
 
 
-def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
+def create_landing_page(subdomain: str, landing_page_request: LandingPageModel):
     """
     랜딩 페이지를 생성합니다.
 
@@ -25,16 +25,13 @@ def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRe
         raise HTTPException(status_code=400, detail="Invalid input data")
 
     try:
-        imageUrls = [req.image_url for req in landing_page_request]
-        titles = [req.title for req in landing_page_request]
-        descriptions = [req.description for req in landing_page_request]
-
         ddb.Table("landing_page").put_item(
             Item={
                 "subdomain": subdomain,
-                "imageUrls": imageUrls,
-                "titles": titles,
-                "descriptions": descriptions
+                "hero": landing_page_request.hero,
+                "section_1": landing_page_request.section_1,
+                "section_2": landing_page_request.section_2,
+                "section_3": landing_page_request.section_3,
             }
         )
     except (BotoCoreError, ClientError) as e:
@@ -43,7 +40,7 @@ def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRe
     return {"message": "success"}
 
 
-def get_landing_page(subdomain: str) -> List[LandingPageRequest]:
+def get_landing_page(subdomain: str) -> LandingPageModel:
     """
     랜딩 페이지 정보를 조회합니다.
 
@@ -67,21 +64,16 @@ def get_landing_page(subdomain: str) -> List[LandingPageRequest]:
         raise HTTPException(status_code=404, detail="Landing page not found")
 
     item = response['Item']
-    image_urls = item.get("imageUrls", [])
-    titles = item.get("titles", [])
-    descriptions = item.get("descriptions", [])
 
-    return [
-        LandingPageRequest(
-            title=title,
-            description=desc,
-            image_url=url
-        )
-        for title, desc, url in zip(titles, descriptions, image_urls)
-    ]
+    return LandingPageModel(
+        hero=item.get("hero", ""),
+        section_1=item.get("section_1", ""),
+        section_2=item.get("section_2", ""),
+        section_3=item.get("section_3", ""),
+    )
 
 
-def update_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
+def update_landing_page(subdomain: str, landing_page_request: LandingPageModel):
     """
     랜딩 페이지 정보를 업데이트합니다.
 
@@ -96,17 +88,14 @@ def update_landing_page(subdomain: str, landing_page_request: List[LandingPageRe
         raise HTTPException(status_code=400, detail="Invalid input data")
 
     try:
-        imageUrls = [req.image_url for req in landing_page_request]
-        titles = [req.title for req in landing_page_request]
-        descriptions = [req.description for req in landing_page_request]
-
         ddb.Table("landing_page").update_item(
             Key={"subdomain": subdomain},
-            UpdateExpression="SET imageUrls = :imageUrls, titles = :titles, descriptions = :descriptions",
+            UpdateExpression="SET hero = :hero, section_1 = :section_1, section_2 = :section_2, section_3 = :section_3",
             ExpressionAttributeValues={
-                ":imageUrls": imageUrls,
-                ":titles": titles,
-                ":descriptions": descriptions
+                ":hero": landing_page_request.hero,
+                ":section_1": landing_page_request.section_1,
+                ":section_2": landing_page_request.section_2,
+                ":section_3": landing_page_request.section_3,
             }
         )
     except (BotoCoreError, ClientError) as e:
