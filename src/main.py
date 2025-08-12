@@ -6,7 +6,7 @@ from src.model.problem_model import ProblemStatsModel, AssignmentReview
 from src.model.landing_page_model import LandingPageModel
 from src.model.response_model import BaseResponse
 from src.service import chat_service, generate_service, landing_page_service, assignment_analysis_service, \
-    image_service, unified_image_process, image_process_service
+    image_service, image_process_service
 from src.model.chat_model import *
 from src.model.generate_model import *
 from src.service import problem_service
@@ -71,7 +71,6 @@ async def image_analysis(analysis_request: ImageProcessRequest, background_tasks
     if not validate_image_url(analysis_request.imageURL):
         raise HTTPException(status_code=400, detail="invalid image URL or format")
     background_tasks.add_task(image_process_service.image_process, analysis_request)
-    # background_tasks.add_task(unified_image_process.unififed_image_process, analysis_request)
 
     return BaseResponse(status_code=200, message="Image processing started successfully.")
 
