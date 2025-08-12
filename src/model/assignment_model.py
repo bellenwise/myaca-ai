@@ -23,3 +23,13 @@ class GetAssignmentAnalysisRequest(BaseModel):
     """
     acaId: str
     assignmentId: str
+
+
+class AssignmentRequest(BaseModel):
+    """
+    과제 분석 요청
+
+    Args :
+        - assignmentId: str
+    """
+    assignmentId: str
