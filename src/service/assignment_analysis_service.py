@@ -2,12 +2,13 @@ import boto3
 import logging
 import dotenv
 import langchain_openai
+from typing import Dict
 from fastapi import Header
 from boto3.dynamodb.conditions import Key
 from langchain.chains.llm import LLMChain
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-from src.model.assignment_model import AssignmentAnalysisRequest, GetAssignmentAnalysisRequest
+from src.model.assignment_model import AssignmentAnalysisRequest
 from src.model.outputParser import AssignmentAnalysisResult
 from src.model.response_model import BaseResponse, SuccessResponse, UnauthorizedResponse
 from src.utils.extract_claim_sub import extract_claim_sub
@@ -42,8 +43,6 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
     """
 
     # init
-
-
     llm = langchain_openai.ChatOpenAI(
         model="gpt-4o",
         temperature=0.5,
@@ -70,7 +69,12 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
     #  Get all Assignments from ddb-academies
     assignment_submissions = ddb.Table("academies").query(
         KeyConditionExpression = Key('PK').eq(f"ASSIGNMENT#{a_a_request.assignmentId}")
-    )
+    ).get('Item', [])
+
+    incorrect_reasons = Dict[str, int]
+
+    for assignment in assignment_submissions :
+        incorrect_reasons[assignment.get("IncorectReason")] += 1
 
     # Request to LLM to analyze Assignment
     parser = PydanticOutputParser(pydantic_object=AssignmentAnalysisResult)
@@ -112,14 +116,12 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
     assignment_analysis_result = parser.parse(llm_response)
 
     # update item ddb-academies
-    ddb.Table("assignment_submits").put_item(
+    ddb.Table("assignment_submits").put_items(
         Item={
             "PK": f"ASSIGNMENT#{a_a_request.assignmentId}",
             "SK": "INFO",
-            "IncorrectCount": assignment_analysis_result.incorrect_count,
-            "IncorrectReason": assignment_analysis_result.incorrect_reasons,  # 변수명 확인 필요
+            "IncorrectReasons": incorrect_reasons,
             "Analysis": assignment_analysis_result.analysis,
-            "Avg": f"{assignment_analysis_result.score_avg}/{assignment_analysis_result.total_count}",
         },
     )
 
@@ -127,9 +129,8 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
             data={
                 "acaId": a_a_request.acaId,
                 "assignmentId": a_a_request.assignmentId,
-                "score_avg": assignment_analysis_result.score_avg,
                 "analysis": assignment_analysis_result.analysis,
-                "IncorrectReasons": assignment_analysis_result.incorrect_reasons,
+                "IncorrectReasons": incorrect_reasons,
             }
         )
 
@@ -138,9 +139,8 @@ def get_assignment_analysis(acaId, assignmentId, authorization: str = Header(Non
     """
     과제 메타데이터와 개별 문항 내용을 조회하는 함수
     Args:
-        g_a_request:
-            acaId: 과제 조회를 위한
-            assignmentId: 과제 조회를 위한
+        acaId: 과제 조회를 위한
+        assignmentId: 과제 조회를 위한
         authorization: Header
 
     Returns:
@@ -163,9 +163,7 @@ def get_assignment_analysis(acaId, assignmentId, authorization: str = Header(Non
 
     # Formatting
     response_data = {
-        "score_avg" : assignment_meta.get("Avg", "0/0"),
         "analysis" : assignment_meta.get("Analysis", ""),
-        "IncorrectReasons" : assignment_meta.get("IncorrectReasons", {})
     }
 
     # return
