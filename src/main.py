@@ -38,9 +38,9 @@ def analyze_submission(a_s_request: SubmissionAnalysisRequest, authorization: st
     return submission_analysis_service.analyze_submission(a_s_request, authorization)
 
 
-@app.post("/assignment/analyze", summary="과제 마감 후 제출물 분석")
-def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
-    return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
+# @app.post("/assignment/analyze", summary="과제 마감 후 제출물 분석")
+# def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
+#     return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
 
 
 @app.get("/assignment/analysis", summary="과제 분석 내용 조회")

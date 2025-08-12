@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict
+from typing import Dict, Any
 
 
 class BaseResponse(BaseModel):
@@ -11,7 +11,7 @@ class BaseResponse(BaseModel):
     """
     status_code: int
     message: str
-    data: Dict[str, any] = None
+    data: Dict[str, Any] = None
 
 
 class SuccessResponse(BaseResponse):
