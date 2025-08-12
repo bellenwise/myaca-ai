@@ -43,7 +43,7 @@ def get_problem_stats(subdomain: str, problem_id: str) -> ProblemStatsModel:
     else:
         correct_rate = int(round((total_solved - incorrect_count) / total_solved * 100, 0))
 
-    reason = item.get('Reason', {})
+    reason = item.get('Reasons', {})
 
     return ProblemStatsModel(
         correctRate=correct_rate,
