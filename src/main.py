@@ -1,7 +1,7 @@
 from typing import TypeVar
 from src.model.image_model import ImageProcessRequest, ImageGenerationRequest
 from src.service import image_process_service
-from fastapi import FastAPI, Header, Response
+from fastapi import FastAPI, Header, Response, HTTPException, BackgroundTasks
 from typing import List
 from src.model.assignment_model import AssignmentAnalysisRequest
 from src.model.problem_model import ProblemStatsModel, AssignmentReview
@@ -11,6 +11,7 @@ from src.service import chat_service, generate_service, landing_page_service, as
 from src.model.chat_model import *
 from src.model.generate_model import *
 from src.service import problem_service
+from src.utils.validate_image import validate_image_url
 
 T = TypeVar('T')
 
@@ -28,8 +29,13 @@ def generate_problem(generate_request: GenerateRequest, authorization: str = Hea
 
 
 @app.post("/submission/analyze",summary="학생 제출 이미지 텍스트 분석 및 저장")
-def image_analysis(analysis_request: ImageProcessRequest) -> BaseResponse:
-    return image_process_service.image_process(analysis_request)
+async def image_analysis(analysis_request: ImageProcessRequest, background_tasks: BackgroundTasks) -> BaseResponse:
+    # Get submission image from image URL
+    if not validate_image_url(analysis_request.imageURL):
+        raise HTTPException(status_code=400, detail="invalid image URL or format")
+    background_tasks.add_task(image_process_service.image_process, analysis_request)
+
+    return BaseResponse(status_code=200, message="Image processing started successfully.")
 
 
 @app.post("/assignment/analyze", summary="과제 마감 후 제출물 분석")
