@@ -56,3 +56,6 @@ jobs:
             # Run a new container with the updated image and environment variables
             # This maps port 80 on the EC2 instance to port 8000 inside the container
             sudo docker run -d --name myaca-ai-container --env-file .env -p 8000:8000 ${{ secrets.DOCKERHUB_USERNAME }}/myaca-ai:latest
+            
+            # remove any stopped containers, unused volumes, and networks
+            sudo docker system prune -af --volumes
