@@ -1,7 +1,7 @@
 from typing import TypeVar
 from src.model.image_model import ImageProcessRequest, ImageGenerationRequest
 from src.service import image_process_service
-from fastapi import FastAPI, Header, Response, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Header, Response, HTTPException, BackgroundTasks, Request
 from typing import List
 from src.model.assignment_model import AssignmentAnalysisRequest
 from src.model.problem_model import ProblemStatsModel, AssignmentReview
@@ -12,11 +12,47 @@ from src.model.chat_model import *
 from src.model.generate_model import *
 from src.service import problem_service
 from src.utils.validate_image import validate_image_url
+import logging
+import time
+import json
 
 T = TypeVar('T')
 
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 app = FastAPI()
 
+
+@app.middleware("http")
+async def log_request(request: Request, call_next):
+    """
+    Middleware to log request details
+    """
+
+    start_time = time.time()
+
+    # 쿼리 파라미터
+    query_params = dict(request.query_params)
+
+    # 요청 바디 읽기 (스트림 소모 → 복사)
+    body_bytes = await request.body()
+    try:
+        body_data = json.loads(body_bytes.decode("utf-8"))
+    except json.JSONDecodeError:
+        body_data = body_bytes.decode("utf-8") if body_bytes else None
+
+    # 요청 로그 출력
+    logger.info(f"📥 Request: [{request.method}] {request.url}")
+    logger.info(f"🔍 Query Params: {query_params}")
+    logger.info(f"🔍 Body: {body_data}")
+
+    response = await call_next(request)
+
+    process_time = (time.time() - start_time) * 1000
+    logger.info(f"📤 Response: {response.status_code} ({process_time:.2f} ms)")
+
+    return response
 
 @app.post("/chat", summary="학생 LLM 채팅")
 def talk_chatbot(chat_request: ChatRequest, Authorization: Union[str, None] = Header(default=None)) -> ChatResponse:
