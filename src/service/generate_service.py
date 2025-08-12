@@ -14,7 +14,7 @@ from src.utils.extract_claim_sub import extract_claim_sub
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
 
-def  generate_problem(generate_request: GenerateRequest, authorization: str) -> BaseResponse:
+def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
     """
         비슷한 문제 생성
 
@@ -29,19 +29,13 @@ def  generate_problem(generate_request: GenerateRequest, authorization: str) -> 
 
     ddb = boto3.resource(
         'dynamodb',
-        region_name='ap-northeast-2',
-        endpoint_url='http://localhost:8000'
+        region_name='ap-northeast-2'
     )
-
-    sub, ok, e = extract_claim_sub(authorization)
-    if not ok:
-        logger.error(e)
-        return UnauthorizedResponse()
 
     # Get Problem with acaID & problemID from ddb-problems
     problem = ddb.Table("problems").get_item(
         Key={"PK": generate_request.acaId, "SK": f"PROBLEM#{generate_request.problemId}"}
-    )
+    ).get('Item')
 
     # Request to LLM that a kind of problem of selected problem
     llm = ChatOpenAI(
@@ -56,19 +50,20 @@ def  generate_problem(generate_request: GenerateRequest, authorization: str) -> 
         당신은 수학 교사입니다.
         다음은 문제, 문제를 틀린 학생들의 틀린 이유와 그 수입니다.
         문제: {problem}
-        틀린 이유와 그 수: {IncorrectReason}
+        틀린 이유와 그 수: {IncorrectReasons}
 
         문제, 정답률, 틀린 이유를 바탕으로 다음과 같은 지침에 따라 문제와 비슷한 문제를 생성해 주세요.
         1. 총 제출자와 틀린 이유의 수를 기반으로 정답률을 고려해 문제의 복잡도를 전체 학생 수준의 중간으로 조정해 주세요.
         2. 틀린 이유와 그 수를 고려하여 가장 많이 틀린 이유를 훈련할 수 있도록 동일한 분야의 새 문제를 생성해 주세요.
         3. 새롭게 생성한 문제가 오류 혹은 잘못된 구조로 이루어졌는지 점검해 주세요.
         4. 정상적으로 점검된 문제를 정리하여 기존 문제와 같은 형식으로 만들어 주세요.
+        5. 생성된 모든 내용을 한글로 번역해 주세요.
 
         {format_instructions}    
     """
     prompt = PromptTemplate(
         template=generate_prompt,
-        input_variables=["problem", "IncorrectReason"],
+        input_variables=["problem", "IncorrectReasons"],
         partial_variables={
             "format_instructions": parser.get_format_instructions()
         }
@@ -77,7 +72,7 @@ def  generate_problem(generate_request: GenerateRequest, authorization: str) -> 
     chain = LLMChain(llm=llm, prompt=prompt)
     llm_response = chain.run(
         problem=problem,
-        IncorrectReason=problem.get('IncorrectReason', {}).get('N'),
+        IncorrectReasons=problem.get('IncorrectReasons'),
     )
 
     generate_result = parser.parse(llm_response)
@@ -147,10 +142,10 @@ def  generate_problem(generate_request: GenerateRequest, authorization: str) -> 
             "Solution": generate_result.solution,
         }
 
-    ddb.Table("problems").put_item(
-        Item= response_item,
-        ConditionExpression="attribute_not_exists(SK)"
-    )
+    # ddb.Table("problems").put_item(
+    #     Item= response_item,
+    #     ConditionExpression="attribute_not_exists(SK)"
+    # )
 
     # return new ddb-formatted problem
     return SuccessResponse(

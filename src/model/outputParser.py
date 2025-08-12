@@ -60,7 +60,7 @@ class GenerateResult(BaseModel):
     category: str = Field(description="Category of the problem")
     name: str = Field(description="Name or title of the problem")
     choices: list[str] = Field(description="List of choices for a multiple-choice problem")
-    answers: str = Field(description="The correct answer to the problem")
+    answers: list[int] = Field(description="The correct answer to the problem, contains index if select, indexes of multi, integer if subjective")
     question: str = Field(description="The problem statement or question")
     tags: list[str] = Field(description="List of tags related to the problem")
     type: str = Field(description="List of problem types (e.g., 'select', 'multi', 'subjective')")

@@ -62,8 +62,8 @@ def talk_chatbot(chat_request: ChatRequest, Authorization: Union[str, None] = He
 
 
 @app.post("/problem/generate", summary="관리자 비슷한 문제 생성")
-def generate_problem(generate_request: GenerateRequest, authorization: str = Header(None)) -> BaseResponse:
-    return generate_service.generate_problem(generate_request, authorization)
+def generate_problem(generate_request: GenerateRequest) -> BaseResponse:
+    return generate_service.generate_problem(generate_request)
 
 
 @app.post("/submission/analyze",summary="학생 제출 이미지 텍스트 분석 및 저장")
