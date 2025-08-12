@@ -17,7 +17,6 @@ import logging
 import time
 import json
 
-
 T = TypeVar('T')
 
 # 로깅 설정
@@ -28,9 +27,11 @@ app = FastAPI()
 
 @app.middleware("http")
 async def log_request(request: Request, call_next):
-    """
-    Middleware to log request details
-    """
+    # 로깅 제외할 경로 리스트
+    exclude_paths = ["/image_generation"]
+
+    if request.url.path in exclude_paths:
+        return await call_next(request)
 
     start_time = time.time()
 
@@ -56,6 +57,7 @@ async def log_request(request: Request, call_next):
 
     return response
 
+
 @app.post("/chat", summary="학생 LLM 채팅")
 def talk_chatbot(chat_request: ChatRequest, Authorization: Union[str, None] = Header(default=None)) -> ChatResponse:
     return chat_service.response_chat(chat_request, Authorization)
@@ -66,7 +68,7 @@ def generate_problem(generate_request: GenerateRequest, authorization: str = Hea
     return generate_service.generate_problem(generate_request, authorization)
 
 
-@app.post("/submission/analyze",summary="학생 제출 이미지 텍스트 분석 및 저장")
+@app.post("/submission/analyze", summary="학생 제출 이미지 텍스트 분석 및 저장")
 async def image_analysis(analysis_request: ImageProcessRequest, background_tasks: BackgroundTasks) -> BaseResponse:
     # Get submission image from image URL
     if not validate_image_url(analysis_request.imageURL):
@@ -84,9 +86,9 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
 @app.get("/assignment/analysis", summary="과제 분석 내용 조회")
 # def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
 #     return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)
-def get_assignment_analysis(assignmentId : str) -> BaseResponse:
+def get_assignment_analysis(assignmentId: str) -> BaseResponse:
     return gaa(assignmentId)
-  
+
 
 @app.post("/landing/{subdomain}", summary="랜딩 페이지 Create")
 def create_landing_page(subdomain: str, landing_page_request: LandingPageModel):
@@ -98,7 +100,7 @@ def get_landing_page(subdomain: str) -> LandingPageModel:
     return landing_page_service.get_landing_page(subdomain)
 
 
-@app.put("/landing/{subdomain}",  summary="랜딩 페이지 Update")
+@app.put("/landing/{subdomain}", summary="랜딩 페이지 Update")
 def update_landing_page(subdomain: str, landing_page_request: LandingPageModel):
     return landing_page_service.update_landing_page(subdomain, landing_page_request)
 
