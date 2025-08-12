@@ -28,10 +28,10 @@ def create_landing_page(subdomain: str, landing_page_request: LandingPageModel):
         ddb.Table("landing_page").put_item(
             Item={
                 "subdomain": subdomain,
-                "hero": landing_page_request.hero,
-                "section_1": landing_page_request.section_1,
-                "section_2": landing_page_request.section_2,
-                "section_3": landing_page_request.section_3,
+                "hero": landing_page_request.hero.model_dump(),
+                "section_1": landing_page_request.section_1.model_dump(),
+                "section_2": landing_page_request.section_2.model_dump(),
+                "section_3": landing_page_request.section_3.model_dump(),
             }
         )
     except (BotoCoreError, ClientError) as e:
@@ -92,10 +92,10 @@ def update_landing_page(subdomain: str, landing_page_request: LandingPageModel):
             Key={"subdomain": subdomain},
             UpdateExpression="SET hero = :hero, section_1 = :section_1, section_2 = :section_2, section_3 = :section_3",
             ExpressionAttributeValues={
-                ":hero": landing_page_request.hero,
-                ":section_1": landing_page_request.section_1,
-                ":section_2": landing_page_request.section_2,
-                ":section_3": landing_page_request.section_3,
+                ":hero": landing_page_request.hero.model_dump(),
+                ":section_1": landing_page_request.section_1.model_dump(),
+                ":section_2": landing_page_request.section_2.model_dump(),
+                ":section_3": landing_page_request.section_3.model_dump(),
             }
         )
     except (BotoCoreError, ClientError) as e:
