@@ -34,7 +34,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
     # Get Problem with acaID & problemID from ddb-problems
     problem = ddb.Table("problems").get_item(
         Key={"PK": generate_request.acaId, "SK": f"PROBLEM#{generate_request.problemId}"}
-    ).get('Item')
+    ).get('Item', {})
 
     # Request to LLM that a kind of problem of selected problem
     llm = ChatOpenAI(
@@ -49,9 +49,9 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
         당신은 수학 교사입니다.
         다음은 문제, 문제를 틀린 학생들의 이유와 그 수입니다.
         문제: {problem}
-        이유와 그 수: {Reasons}
+        이유와 그 수: {reasons}
 
-        문제, 정답률, 이유를 바탕으로 다음과 같은 지침에 따라 문제와 비슷한 문제를 생성해 주세요.
+        문제, 이유를 바탕으로 다음과 같은 지침에 따라 문제와 비슷한 문제를 생성해 주세요.
         1. 총 제출자와 이유의 수를 기반으로 정답률을 고려해 문제의 복잡도를 전체 학생 수준의 중간으로 조정해 주세요.
         2. 이유와 그 수를 고려하여 가장 많이 이유를 훈련할 수 있도록 새 문제의 문항을 생성해 주세요.
         3. 새 문제에 맞는 풀이 과정을 솔루션으로 만들고, 아래의 3가지 중 임의의 하나를 선택해 답변 형식을 지정해 주세요.
@@ -70,7 +70,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
     """
     prompt = PromptTemplate(
         template=generate_prompt,
-        input_variables=["problem", "Reasons"],
+        input_variables=["problem", "reasons"],
         partial_variables={
             "format_instructions": parser.get_format_instructions()
         }
@@ -79,7 +79,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
     chain = LLMChain(llm=llm, prompt=prompt)
     llm_response = chain.run(
         problem=problem,
-        Reasons=problem.get('Reasons'),
+        reasons=problem.get('Reasons', {}),
     )
 
     generate_result = parser.parse(llm_response)
@@ -134,7 +134,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
             "type": generate_result.type,
             "imageURL": generate_result.imageURL,
             "totalSolved": 0,
-            "Reasons": {
+            "reasons": {
                 "개념 부족" : 0,
                 "적용 오류" : 0,
                 "문제 해석 오류" : 0,
@@ -148,11 +148,6 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
             },
             "solution": generate_result.solution,
         }
-
-    # ddb.Table("problems").put_item(
-    #     Item= response_item,
-    #     ConditionExpression="attribute_not_exists(SK)"
-    # )
 
     # return new ddb-formatted problem
     return SuccessResponse(
