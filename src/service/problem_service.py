@@ -38,7 +38,7 @@ def get_problem_stats(subdomain: str, problem_id: str) -> ProblemStatsModel:
 
     return ProblemStatsModel(
         correctRate=correct_rate,
-        Reason=reason
+        reason=reason
     )
 
 
@@ -55,7 +55,7 @@ def get_student_assignment_review(student_id: str, assignment_id: str) -> List[A
     return_items = [
         AssignmentReview(
             problemID=item.get('SK').split('#')[-1],
-            Reason=item.get('Reason', None),
+            reason=item.get('Reason', None),
             analysis=item.get('Analysis', None),
             explanation=item.get('Explanation', None),
         )
