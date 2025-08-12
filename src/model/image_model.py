@@ -11,6 +11,7 @@ class ImageProcessRequest(BaseModel):
         - problemId: str
         - imageURL: str
     """
+    acaId: str
     studentId: str
     assignmentUuid: str
     problemId: str

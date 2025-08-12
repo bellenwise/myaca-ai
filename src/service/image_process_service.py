@@ -58,14 +58,6 @@ def image_process(i_p_request: ImageProcessRequest):
 
     # DDB interaction
     try :
-        submission = ddb.Table("assignment_submits").get_item(
-            Key={
-                "PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}",
-                 "SK": f"{sub}#{i_p_request.problemId}"
-            }
-        )
-        explanation = submission.get('Item', {}).get('Explanation', "")
-
         # Get solution from ddb-problems
         problem = ddb.Table("problems").get_item(
             Key={"PK": i_p_request.acaId, "SK": f"PROBLEM#{i_p_request.problemId}"}
@@ -106,7 +98,7 @@ def image_process(i_p_request: ImageProcessRequest):
 
     chain = LLMChain(llm=llm, prompt=prompt)
     llm_response = chain.run(
-        explanation=text_saved,
+        explanation=text_response.text,
         solution=solution,
     )
 
@@ -132,10 +124,11 @@ def image_process(i_p_request: ImageProcessRequest):
             "논리적 오류"
             "선택지 오해"
             "추론 실패"
-            "오타" 
+            "오타"
+            "기타"
             
         {format_instructions}
-        """
+    """
     prompt = PromptTemplate(
         template=categorized_prompt,
         input_variables=["analysis_result", "categories"],
@@ -146,7 +139,7 @@ def image_process(i_p_request: ImageProcessRequest):
 
     chain = LLMChain(llm=llm, prompt=prompt)
     llm_response = chain.run(
-        analysis_result=analysis_result,
+        analysis_result=analysis_result.analysis,
         categories=json.dumps(categories),
     )
 
@@ -156,10 +149,11 @@ def image_process(i_p_request: ImageProcessRequest):
     try :
         ddb.Table("assignment_submits").update_item(
             Key={"PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}", "SK": f"{sub}#{i_p_request.problemId}"},
-            UpdateExpression="SET Analysis = :a, IncorrectReason = :ir",
+            UpdateExpression="SET Analysis = :a, IncorrectReason = :ir, Explanation = :ex",
             ExpressionAttributeValues={
                 ":a": analysis_result.analysis,
                 ":ir": categorize_result.reason,
+                ":ex": text_response.text,
             }
         )
 
