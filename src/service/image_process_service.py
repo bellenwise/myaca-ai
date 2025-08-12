@@ -68,6 +68,7 @@ def image_process(i_p_request: ImageProcessRequest):
             Key={"PK": i_p_request.acaId, "SK": f"PROBLEM#{i_p_request.problemId}"}
         )
         solution = problem.get("Item", {}).get('Solution', '')
+        problem_reasons = problem.get("Item", {}).get("Reasons", {})
 
     except Exception as e :
         return InternalServerErrorResponse(message="failed to get item from ddb")
@@ -166,17 +167,19 @@ def image_process(i_p_request: ImageProcessRequest):
 
         # Update incorrect_reason into ddb-problems
         item = problem.get("Item", {})
-        inc = item["IncorrectCount"]
+        inc = item.get("IncorrectCount")
         inc[categorize_result.reason] += 1
+        problem_reasons[categorize_result.reason] += 1
 
         ddb.Table("problems").update_item(
             Key={
                 "PK": i_p_request.acaId,
                 "SK": f"PROBLEM#{i_p_request.problemId}"
             },
-            UpdateExpression="SET IncorrectCount = :inc",
+            UpdateExpression="SET IncorrectCount = :inc, Reason = :r ",
             ExpressionAttributeValues={
-                ":inc": inc
+                ":inc": inc,
+                ":r": problem_reasons
             }
         )
 

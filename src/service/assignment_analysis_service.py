@@ -132,19 +132,6 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
         }
     ).get("Item", {})
 
-    problem_reasons = problem.get("Reasons")
-
-    ddb.Table("problems").update_item(
-        Key={
-            "PK": a_a_request.acaId,
-            "SK": f"PROBLEM#{a_a_request.problemId}",
-        },
-        UpdateExpression="SET Reasons = :r",
-        ExpressionAttributeValues={
-            ":r": problem_reasons,
-        }
-    )
-
     return SuccessResponse(
             data={
                 "acaId": a_a_request.acaId,
