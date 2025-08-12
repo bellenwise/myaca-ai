@@ -58,7 +58,7 @@ def get_assignment_analysis(course_id: str, assignment_id: str) -> BaseResponse:
                 "reasons": dict(reasons),
                 "problemCounts": counts,
                 "score": total_score,
-                "avgSum": int(score_sum)/ass_num
+                "avg": int(score_sum)/ass_num
             }
         )
 
