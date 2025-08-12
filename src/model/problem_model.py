@@ -19,10 +19,10 @@ class AssignmentReview(BaseModel):
     과제 통계
 
     Args :
-        - questionId: str
+        - problemID: str
         - incorrectReason: Union[str, None]
         - analysis: Union[str, None]
     """
-    questionId: str
+    problemID: str
     incorrectReason: Union[str, None]
     analysis: Union[str, None]
