@@ -83,9 +83,9 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
 @app.get("/assignment/analysis", summary="과제 분석 내용 조회")
 # def get_assignment_analysis(acaId: str, assignmentId: str, authorization: str = Header(None)) -> BaseResponse:
 #     return assignment_analysis_service.get_assignment_analysis(acaId, assignmentId, authorization)
-def get_assignment_analysis(courseId: str, assignmentId : str) -> BaseResponse:
+def get_assignment_analysis(courseId: str, assignmentId: str) -> BaseResponse:
     return gaa(courseId, assignmentId)
-  
+
 
 @app.post("/landing/{subdomain}", summary="랜딩 페이지 Create")
 def create_landing_page(subdomain: str, landing_page_request: LandingPageModel):
@@ -105,6 +105,11 @@ def update_landing_page(subdomain: str, landing_page_request: LandingPageModel):
 @app.get("/problem/stats", summary="문제에 대한 통계를 조회하는 API")
 def get_problem_stats(subdomain: str, problem_id: str) -> ProblemStatsModel:
     return problem_service.get_problem_stats(subdomain, problem_id)
+
+
+@app.get("/problem_analysis", summary="문제 분석 생성 및 조회 API")
+def problem_analysis(problem_id: str) -> str:
+    return problem_service.get_analysis_summary(problem_id)
 
 
 @app.get("/review", summary="학생의 과제 분석 결과를 조회하는 API")
