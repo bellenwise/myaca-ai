@@ -17,8 +17,6 @@ import logging
 import time
 import json
 
-T = TypeVar('T')
-
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -48,20 +48,20 @@ def get_assignment_analysis(course_id: str, assignment_id: str) -> BaseResponse:
 
     if count == 0 or counts == {} :
         return InternalServerErrorResponse(
-            message="No analysis",
+            message="no Analysis",
             data={
-                "ProblemCounts": counts,
-                "Score": total_score,
-                "Avg": int(score_sum)/ass_num
+                "problemCounts": counts,
+                "score": total_score,
+                "avg": int(score_sum)/ass_num
             }
         )
     else :
         return SuccessResponse(
             data={
-                "IncorrectReasons": incorrectReasons,
-                "ProblemCounts": counts,
-                "Score": total_score,
-                "AvgSum": int(score_sum)/ass_num
+                "incorrectReasons": incorrectReasons,
+                "problemCounts": counts,
+                "score": total_score,
+                "avgSum": int(score_sum)/ass_num
             }
         )
 
