@@ -58,7 +58,7 @@ def image_process(i_p_request: ImageProcessRequest):
     if not text_response.ok :
         logger.error(f"failed to text_validity {text_response.ok}")
         return InternalServerErrorResponse(message="failed to convert image to text")
-    
+
     logger.info(f"text_response: {text_response}")
 
     # DDB interaction
@@ -130,7 +130,6 @@ def image_process(i_p_request: ImageProcessRequest):
             "선택지 오해"
             "추론 실패"
             "오타"
-            "기타"
             
         {format_instructions}
     """

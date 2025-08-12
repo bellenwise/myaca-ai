@@ -29,6 +29,8 @@ def get_assignment_analysis(course_id: str, assignment_id: str) -> BaseResponse:
     total_score = 0
     score_sum = 0
     ass_num = 0
+    count = 0
+
     for submit in assignment_submits:
         ass_num += 1
         total_score = len(submit.get("Problems"))
@@ -37,8 +39,7 @@ def get_assignment_analysis(course_id: str, assignment_id: str) -> BaseResponse:
         for key, value in count.items() :
             if key : counts[key] += 1
 
-    count = 0
-    incorrectReasons :Dict[str, int] = {}
+    incorrectReasons :Dict[str, int] = defaultdict(int)
 
     for assignment in assignments:
         incorrectReason = assignment.get("IncorrectReason", "")
@@ -46,7 +47,7 @@ def get_assignment_analysis(course_id: str, assignment_id: str) -> BaseResponse:
             incorrectReasons[incorrectReason] += 1
             count += 1
 
-    if count == 0 or counts == {} :
+    if count == 0 :
         return InternalServerErrorResponse(
             message="no Analysis",
             data={
