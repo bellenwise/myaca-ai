@@ -49,7 +49,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
         당신은 수학 교사입니다.
         다음은 문제, 문제를 틀린 학생들의 이유와 그 수입니다.
         문제: {problem}
-        이유와 그 수: {reasons}
+        이유와 그 수: {Reasons}
 
         문제, 정답률, 이유를 바탕으로 다음과 같은 지침에 따라 문제와 비슷한 문제를 생성해 주세요.
         1. 총 제출자와 이유의 수를 기반으로 정답률을 고려해 문제의 복잡도를 전체 학생 수준의 중간으로 조정해 주세요.
