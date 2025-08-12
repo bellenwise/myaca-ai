@@ -26,3 +26,4 @@ class AssignmentReview(BaseModel):
     problemID: str
     incorrectReason: Union[str, None]
     analysis: Union[str, None]
+    explanation: Union[str, None]

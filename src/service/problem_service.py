@@ -56,7 +56,8 @@ def get_student_assignment_review(student_id: str, assignment_id: str) -> List[A
         AssignmentReview(
             problemID=item.get('SK').split('#')[-1],
             incorrectReason=item.get('IncorrectReason', None),
-            analysis=item.get('Analysis', None)
+            analysis=item.get('Analysis', None),
+            explanation=item.get('Explanation', None),
         )
         for item in response['Items']
     ]
