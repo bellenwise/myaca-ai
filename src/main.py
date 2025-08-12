@@ -5,7 +5,6 @@ from fastapi import FastAPI, Header, Response
 from typing import List
 from src.model.assignment_model import AssignmentAnalysisRequest
 from src.model.problem_model import ProblemStatsModel, AssignmentReview
-from src.model.submission_model import SubmissionAnalysisRequest
 from src.model.landing_page_model import LandingPageRequest
 from src.model.response_model import BaseResponse
 from src.service import chat_service, generate_service, landing_page_service, assignment_analysis_service, image_service
@@ -33,9 +32,9 @@ def image_analysis(analysis_request: ImageProcessRequest) -> BaseResponse:
     return image_process_service.image_process(analysis_request)
 
 
-# @app.post("/assignment/analyze", summary="과제 마감 후 제출물 분석")
-# def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
-#     return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
+@app.post("/assignment/analyze", summary="과제 마감 후 제출물 분석")
+def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: str = Header(None)) -> BaseResponse:
+    return assignment_analysis_service.analyze_assignment(a_a_request, authorization)
 
 
 @app.get("/assignment/analysis", summary="과제 분석 내용 조회")
