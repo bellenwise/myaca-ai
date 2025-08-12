@@ -168,8 +168,8 @@ def image_process(i_p_request: ImageProcessRequest):
         # Update incorrect_reason into ddb-problems
         item = problem.get("Item", {})
         inc = item.get("IncorrectCount")
-        inc[categorize_result.reason] += 1
-        problem_reasons[categorize_result.reason] += 1
+        inc[categorize_result.reason] = inc.get(categorize_result.reason,0) + 1
+        problem_reasons[categorize_result.reason] = problem_reasons.get(categorize_result.reason, 0) + 1
 
         ddb.Table("problems").update_item(
             Key={
