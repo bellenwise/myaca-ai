@@ -54,7 +54,7 @@ def get_student_assignment_review(student_id: str, assignment_id: str) -> List[A
     # Map the DynamoDB items to AssignmentReview objects
     return_items = [
         AssignmentReview(
-            questionId=item.get('SK').split('#')[-1],
+            problemID=item.get('SK').split('#')[-1],
             incorrectReason=item.get('IncorrectReason', None),
             analysis=item.get('Analysis', None)
         )
