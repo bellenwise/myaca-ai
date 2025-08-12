@@ -10,10 +10,9 @@ from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from src.model.outputParser import AnalysisResult, ReasonResult
 from src.model.categories import categories
-from src.utils.extract_claim_sub import extract_claim_sub
 from src.utils.image2text import image2text
 from src.utils.text_validation import text_validation
-from src.utils.validate_image import validate_image_url
+from src.model.utils_model import TextResponse
 
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
@@ -53,8 +52,8 @@ def image_process(i_p_request: ImageProcessRequest):
         return InternalServerErrorResponse(message="failed to convert image to text")
 
     # Text Validity Check
-    validity, text_saved = text_validation(converted_text)
-    if not validity :
+    text_response : TextResponse = text_validation(converted_text)
+    if not text_response.ok :
         return InternalServerErrorResponse(message="failed to convert image to text")
 
     # DDB interaction
