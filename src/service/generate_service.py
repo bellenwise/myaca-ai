@@ -122,7 +122,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
             "name": title_result.title,
             "choices": generate_result.choices,
             "answer": generate_result.answers,
-            "auestion": generate_result.question,
+            "question": generate_result.question,
             "tags": generate_result.tags,
             "type": generate_result.type,
             "imageURL": generate_result.imageURL,
