@@ -108,3 +108,12 @@ class AssignmentAnalysisResult(BaseModel):
     """
     analysis : str = Field(description="Assignment Analysis Result")
 
+
+class ProblemAnalysisResult(BaseModel):
+    """
+    문제 통계 분석 결과
+
+     Args :
+        - analysis : str
+    """
+    analysis : str = Field(description="Problem Analysis Result")
