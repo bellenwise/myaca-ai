@@ -45,6 +45,8 @@ def image_process(i_p_request: ImageProcessRequest):
 
     sub = i_p_request.studentId
 
+    logger.info("text2image")
+
     # image2text
     try :
         converted_text = image2text(i_p_request.imageURL)
@@ -54,7 +56,10 @@ def image_process(i_p_request: ImageProcessRequest):
     # Text Validity Check
     text_response : TextResponse = text_validation(converted_text)
     if not text_response.ok :
+        logger.error(f"failed to text_validity {text_response.ok}")
         return InternalServerErrorResponse(message="failed to convert image to text")
+    
+    logger.info(f"text_response: {text_response}")
 
     # DDB interaction
     try :
@@ -144,6 +149,8 @@ def image_process(i_p_request: ImageProcessRequest):
     )
 
     categorize_result = parser.parse(llm_response)
+
+    logger.info("chain complete")
 
     # Update analysis into ddb-assignment_submits
     try :
