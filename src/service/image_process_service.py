@@ -54,7 +54,7 @@ def image_process(i_p_request: ImageProcessRequest, authorization: str):
 
     # Get submission image from image URL
     if not validate_image_url(i_p_request.imageURL) :
-        return BadRequestResponse(data="invalid URL")
+        return BadRequestResponse(message="invalid URL")
 
     # image2text
     try :
@@ -153,7 +153,7 @@ def image_process(i_p_request: ImageProcessRequest, authorization: str):
 
     categorize_result = parser.parse(llm_response)
 
-    # Update analysis into ddb-assignment_submits\
+    # Update analysis into ddb-assignment_submits
     try :
         ddb.Table("assignment_submits").update_item(
             Key={"PK": f"ASSIGNMENT#{i_p_request.assignmentUuid}", "SK": f"{sub}#{i_p_request.problemId}"},
