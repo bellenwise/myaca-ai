@@ -18,7 +18,7 @@ from src.utils.validate_image import validate_image_url
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
 
-def image_process(i_p_request: ImageProcessRequest, authorization: str):
+def image_process(i_p_request: ImageProcessRequest):
     """
     학생의 explanation 이미지를 텍스트로 변환하고,
     변환된 텍스트의 유효성을 판단하여 ddb 저장 또는 반려하는 함수
@@ -44,13 +44,7 @@ def image_process(i_p_request: ImageProcessRequest, authorization: str):
     )
     llm = ChatOpenAI(model="gpt-4o", temperature=0.5)
 
-    # authentification
-    sub, ok, e = extract_claim_sub(authorization)
-    if not ok:
-        logger.error(e)
-        return UnauthorizedResponse(
-            message="failed to authorize cognito claims"
-        )
+    sub = i_p_request.studentId
 
     # Get submission image from image URL
     if not validate_image_url(i_p_request.imageURL) :

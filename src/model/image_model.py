@@ -5,7 +5,7 @@ class ImageProcessRequest(BaseModel):
     """
     학생 제출 풀이 이미지 처리 요청
     """
-    acaId: str
+    studentId: str
     assignmentUuid: str
     problemId: str
     imageURL: str

@@ -8,7 +8,7 @@ from src.model.problem_model import ProblemStatsModel, AssignmentReview
 from src.model.submission_model import SubmissionAnalysisRequest
 from src.model.landing_page_model import LandingPageRequest
 from src.model.response_model import BaseResponse
-from src.service import chat_service, submission_analysis_service, generate_service, landing_page_service, assignment_analysis_service, image_service
+from src.service import chat_service, generate_service, landing_page_service, assignment_analysis_service, image_service
 from src.model.chat_model import *
 from src.model.generate_model import *
 from src.service import problem_service
@@ -29,13 +29,8 @@ def generate_problem(generate_request: GenerateRequest, authorization: str = Hea
 
 
 @app.post("/submission/analyze",summary="학생 제출 이미지 텍스트 분석 및 저장")
-def image_analysis(analysis_request: ImageProcessRequest, authorization: str = Header(None)) -> BaseResponse:
-    return image_process_service.image_process(analysis_request, authorization)
-
-
-@app.post("/submission/analyze", summary="학생 제출물과 솔루션 비교 분석")
-def analyze_submission(a_s_request: SubmissionAnalysisRequest, authorization: str = Header(None)):
-    return submission_analysis_service.analyze_submission(a_s_request, authorization)
+def image_analysis(analysis_request: ImageProcessRequest) -> BaseResponse:
+    return image_process_service.image_process(analysis_request)
 
 
 # @app.post("/assignment/analyze", summary="과제 마감 후 제출물 분석")
