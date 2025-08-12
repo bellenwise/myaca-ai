@@ -59,13 +59,6 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
         logger.error(e)
         return UnauthorizedResponse()
 
-    # Get Assignment Meta form ddb-assignment_submits
-    # assignment_meta = ddb.Table("assignment_submits").get_item(
-    #     Key={
-    #         "PK": f"ASSIGNMENT#{a_a_request.assignmentId}",
-    #     },
-    # )
-
     #  Get all Assignments from ddb-academies
     assignment_submissions = ddb.Table("academies").query(
         KeyConditionExpression = Key('PK').eq(f"ASSIGNMENT#{a_a_request.assignmentId}")
