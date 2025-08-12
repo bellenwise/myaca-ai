@@ -125,6 +125,21 @@ def analyze_assignment(a_a_request: AssignmentAnalysisRequest, authorization: st
         },
     )
 
+    ddb.Table("problems").update_item(
+        Key={
+            "PK": a_a_request.acaId,
+            "SK": f"PROBLEM#{a_a_request.problemId}",
+        },
+        UpdateExpression="SET Reasons.#Reason = if_not_exists(Reasons.#Reason, :zero) + :one",
+        ExpressionAttributeNames={
+            "#Reason": reasons,
+        },
+        ExpressionAttributeValues={
+            ":zero": 0,
+            ":one": 1
+        }
+    )
+
     return SuccessResponse(
             data={
                 "acaId": a_a_request.acaId,
