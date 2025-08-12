@@ -46,10 +46,6 @@ def image_process(i_p_request: ImageProcessRequest):
 
     sub = i_p_request.studentId
 
-    # Get submission image from image URL
-    if not validate_image_url(i_p_request.imageURL) :
-        return BadRequestResponse(message="invalid URL")
-
     # image2text
     try :
         converted_text = image2text(i_p_request.imageURL)

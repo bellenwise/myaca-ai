@@ -29,7 +29,11 @@ def get_problem_stats(subdomain: str, problem_id: str) -> ProblemStatsModel:
 
     total_solved = item.get('TotalSolved', 0)
     incorrect_count = item.get('IncorrectCount', 0)
-    correct_rate = f'{total_solved - incorrect_count}/{total_solved}'
+    if total_solved == 0:
+        correct_rate = None
+    else:
+        correct_rate = int(round((total_solved - incorrect_count) / total_solved * 100, 0))
+
     incorrect_reason = item.get('IncorrectReason', {})
 
     return ProblemStatsModel(

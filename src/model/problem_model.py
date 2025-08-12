@@ -10,7 +10,7 @@ class ProblemStatsModel(BaseModel):
         - correctRate: str
         - incorrectReason: dict
     """
-    correctRate: str
+    correctRate: Union[int, None]
     incorrectReason: dict
 
 
