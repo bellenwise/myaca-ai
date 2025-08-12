@@ -116,19 +116,19 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
 
     # Formatting title and generated problem into problem-ddb-format
     response_item = {
-            "PK": generate_request.acaId,
-            "SK": f"PROBLEM#{new_problem_id}",
-            "Category": generate_result.category,
-            "Name": title_result.title,
-            "Choices": generate_result.choices,
-            "Answer": generate_result.answers,
-            "Question": generate_result.question,
-            "Tags": generate_result.tags,
-            "Type": generate_result.type,
-            "ImageURL": generate_result.imageURL,
-            "TotalSolved": 0,
-            "IncorrectCount": 0,
-            "IncorrectReasons": {
+            "pk": generate_request.acaId,
+            "sk": f"PROBLEM#{new_problem_id}",
+            "category": generate_result.category,
+            "name": title_result.title,
+            "choices": generate_result.choices,
+            "answer": generate_result.answers,
+            "auestion": generate_result.question,
+            "tags": generate_result.tags,
+            "type": generate_result.type,
+            "imageURL": generate_result.imageURL,
+            "totalSolved": 0,
+            "incorrectCount": 0,
+            "incorrectReasons": {
                 "개념 부족" : 0,
                 "적용 오류" : 0,
                 "문제 해석 오류" : 0,
@@ -139,7 +139,7 @@ def  generate_problem(generate_request: GenerateRequest) -> BaseResponse:
                 "추론 실패" : 0,
                 "오타" : 0,
             },
-            "Solution": generate_result.solution,
+            "solution": generate_result.solution,
         }
 
     # ddb.Table("problems").put_item(
