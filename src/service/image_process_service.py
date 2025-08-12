@@ -168,6 +168,7 @@ def image_process(i_p_request: ImageProcessRequest):
         # Update incorrect_reason into ddb-problems
         item = problem.get("Item", {})
         inc = item.get("IncorrectCount",0)
+        if categorize_result.reason != "정답": inc += 1
         problem_reasons[categorize_result.reason] = problem_reasons.get(categorize_result.reason, 0) + 1
 
         ddb.Table("problems").update_item(
@@ -177,7 +178,7 @@ def image_process(i_p_request: ImageProcessRequest):
             },
             UpdateExpression="SET IncorrectCount = :inc, Reasons = :r ",
             ExpressionAttributeValues={
-                ":inc": inc+1,
+                ":inc": inc,
                 ":r": problem_reasons
             }
         )
