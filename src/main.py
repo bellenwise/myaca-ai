@@ -5,7 +5,7 @@ from fastapi import FastAPI, Header, Response, HTTPException, BackgroundTasks, R
 from typing import List
 from src.model.assignment_model import AssignmentAnalysisRequest
 from src.model.problem_model import ProblemStatsModel, AssignmentReview
-from src.model.landing_page_model import LandingPageRequest
+from src.model.landing_page_model import LandingPageModel
 from src.model.response_model import BaseResponse
 from src.service import chat_service, generate_service, landing_page_service, assignment_analysis_service, image_service
 from src.model.chat_model import *
@@ -89,17 +89,17 @@ def get_assignment_analysis(courseId: str, assignmentId : str) -> BaseResponse:
   
 
 @app.post("/landing/{subdomain}", summary="랜딩 페이지 Create")
-def create_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
+def create_landing_page(subdomain: str, landing_page_request: LandingPageModel):
     return landing_page_service.create_landing_page(subdomain, landing_page_request)
 
 
 @app.get("/landing/{subdomain}", summary="랜딩 페이지 Read")
-def get_landing_page(subdomain: str) -> List[LandingPageRequest]:
+def get_landing_page(subdomain: str) -> LandingPageModel:
     return landing_page_service.get_landing_page(subdomain)
 
 
 @app.put("/landing/{subdomain}",  summary="랜딩 페이지 Update")
-def update_landing_page(subdomain: str, landing_page_request: List[LandingPageRequest]):
+def update_landing_page(subdomain: str, landing_page_request: LandingPageModel):
     return landing_page_service.update_landing_page(subdomain, landing_page_request)
 
 
