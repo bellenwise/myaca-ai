@@ -130,12 +130,12 @@ def generate_problem(generate_request: GenerateRequest, generate_result=None) ->
         }
     )
     verify_result = verify_chain.invoke({
-        "new_problem": generate_result
+        "new_problem": generate_result.dict()
     })
 
     title_result = title_chain.invoke({
         "problem": problem,
-        "generate_result": generate_result
+        "generate_result": generate_result.dict()
     })
 
     # Formatting title and generated problem into problem-ddb-format
