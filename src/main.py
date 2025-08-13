@@ -6,7 +6,7 @@ from src.model.problem_model import ProblemStatsModel, AssignmentReview
 from src.model.landing_page_model import LandingPageModel
 from src.model.response_model import BaseResponse
 from src.service import chat_service, generate_service, landing_page_service, assignment_analysis_service, \
-    image_service, image_process_service
+    image_service, image_process_service, new_generate_service
 from src.model.chat_model import *
 from src.model.generate_model import *
 from src.service import problem_service
@@ -62,7 +62,8 @@ def talk_chatbot(chat_request: ChatRequest, Authorization: Union[str, None] = He
 
 @app.post("/problem/generate", summary="관리자 비슷한 문제 생성")
 def generate_problem(generate_request: GenerateRequest) -> BaseResponse:
-    return generate_service.generate_problem(generate_request)
+    # return generate_service.generate_problem(generate_request)
+    return new_generate_service.generate_problem(generate_request)
 
 
 @app.post("/submission/analyze", summary="학생 제출 이미지 텍스트 분석 및 저장")

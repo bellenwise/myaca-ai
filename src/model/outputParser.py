@@ -117,3 +117,13 @@ class ProblemAnalysisResult(BaseModel):
         - analysis : str
     """
     analysis : str = Field(description="Problem Analysis Result")
+
+
+class VerifyResult(BaseModel):
+    """
+    생성된 문제에 대한 검수 프롬프트
+
+    Args :
+    - verification : bool
+    """
+    verification : bool = Field(description="True or False")
